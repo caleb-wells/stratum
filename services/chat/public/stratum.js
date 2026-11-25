@@ -24,3 +24,51 @@
     setTimeout(function () { closing = false; }, 300);
   }).observe(document.documentElement, { childList: true, subtree: true });
 })();
+
+// Sign-in errors. Chainlit's own message depends on the HTTP status text, which HTTP/2 does
+// not send, so behind the HTTPS proxy a wrong password showed nothing. Show our own message
+// whenever the sign-in request is refused.
+(function () {
+  if (!window.fetch) return;
+  var original = window.fetch;
+  function show(lines) {
+    var form = document.querySelector("form");
+    if (!form) return;
+    var box = document.getElementById("st-login-error");
+    if (!box) {
+      box = document.createElement("div");
+      box.id = "st-login-error";
+      box.setAttribute("role", "alert");
+      form.appendChild(box);
+    }
+    box.textContent = "";
+    lines.forEach(function (text, i) {
+      var p = document.createElement(i ? "small" : "strong");
+      p.textContent = text;
+      box.appendChild(p);
+    });
+  }
+  function clear() {
+    var box = document.getElementById("st-login-error");
+    if (box) box.remove();
+  }
+  window.fetch = function (input, init) {
+    var url = typeof input === "string" ? input : (input && input.url) || "";
+    var method = ((init && init.method) || (input && input.method) || "GET").toUpperCase();
+    var isLogin = method === "POST" && /\/login(\?|$)/.test(url);
+    if (isLogin) clear();
+    var result = original.apply(this, arguments);
+    if (isLogin) {
+      result.then(function (res) {
+        if (res.status === 401 || res.status === 403) {
+          show(["Incorrect email or password.", "Sign-in pauses for 15 minutes after 8 failed attempts on an account."]);
+        } else if (!res.ok) {
+          show(["Sign-in is unavailable right now.", "Try again in a moment."]);
+        }
+      }, function () {
+        show(["Could not reach the server.", "Check your connection and try again."]);
+      });
+    }
+    return result;
+  };
+})();

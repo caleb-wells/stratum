@@ -324,3 +324,28 @@ img.logo, img[alt="logo"] { max-height: 44px; width: auto; border-radius: 12px; 
   }
   html.dark #root button, html.dark .element-link { transition: none !important; transform: none !important; }
 }
+
+/* sign-in error (inserted by stratum.js); Chainlit's own alert and toast are hidden here
+   because they do not appear reliably behind the HTTPS proxy */
+html .grid.lg\:grid-cols-2 form > [role="alert"]:not(#st-login-error) { display: none; }
+body:has(form #password) [data-sonner-toaster] { display: none; }
+.grid.lg\:grid-cols-2 form > .grid { order: 2; }
+#st-login-error {
+  order: 1;
+  display: flex; flex-direction: column; gap: 0.2rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.8rem;
+  border: 1px solid rgba(255, 120, 130, 0.45);
+  background: rgba(120, 20, 30, 0.35);
+  color: #ffd9dc;
+  font-size: 0.875rem;
+  text-align: left;
+  animation: st-rise 260ms ease both;
+}
+#st-login-error small { color: #f0b9be; font-size: 0.78rem; }
+
+/* the "Used …" line under an answer: let the label and the search description flow as one
+   line of text so a long description wraps under itself instead of beside the label */
+html.dark #root [id^="step-"] button[id^="step-"] { display: block; text-align: left; line-height: 1.45; }
+html.dark #root [id^="step-"] button[id^="step-"] > span { display: inline; margin-right: 0.35em; }
+html.dark #root [id^="step-"] button[id^="step-"] > svg { display: inline-block; vertical-align: middle; margin-left: 0.4rem; }

@@ -134,9 +134,11 @@ dc --profile tls pull -q caddy
 dc --profile tls up -d --no-build caddy
 
 # --- nightly database dump to S3 (chat history + usage log)
+# Amazon Linux 2023 ships without cron, so install it before writing the job.
+dnf install -y cronie >/dev/null 2>&1 || true
+mkdir -p /etc/cron.d
 cat > /etc/cron.d/stratum-backup <<CRON
 15 9 * * * root cd /opt/stratum && for db in rag chainlit; do docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.server.yml --env-file .env exec -T postgres pg_dump -U rag \$db | gzip | aws s3 cp - s3://$BACKUP_BUCKET/postgres/\$db-\$(date +\%F).sql.gz --region $AWS_REGION; done; true
 CRON
-dnf install -y cronie >/dev/null 2>&1 || true
 systemctl enable --now crond >/dev/null 2>&1 || true
 echo "stratum setup finished"
