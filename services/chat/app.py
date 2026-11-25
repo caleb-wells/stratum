@@ -55,28 +55,31 @@ def _accounts() -> dict[str, tuple[str, str, str]]:
     return out
 
 
-_failures: dict[str, list[float]] = {}     # identifier -> recent failed attempts
+# Failed sign-ins are counted per real account, and all unknown emails share one bucket.
+# The table therefore has at most (accounts + 1) entries: it cannot be flooded, and nothing
+# an attacker sends can reset the count for a real account.
+_failures: dict[str, list[float]] = {}
 MAX_FAILURES, WINDOW_SECONDS = 8, 15 * 60
+UNKNOWN = "(unknown account)"
 
 
 @cl.password_auth_callback
 def sign_in(username: str, password: str):
     """Accounts come from the environment. There is no self-registration."""
     key = username.strip().lower()[:200]
-    now = time.time()
-    recent = [t for t in _failures.get(key, []) if now - t < WINDOW_SECONDS]
-    if len(recent) >= MAX_FAILURES:
-        _failures[key] = recent
-        return None
     account = _accounts().get(key)
+    bucket = key if account else UNKNOWN
+    now = time.time()
+    recent = [t for t in _failures.get(bucket, []) if now - t < WINDOW_SECONDS]
+    _failures[bucket] = recent
+    if account and len(recent) >= MAX_FAILURES:
+        return None                         # locked until the oldest failure ages out
     # compare against a dummy when the account is unknown so timing does not reveal which emails exist
     expected = account[0] if account else "x" * 24
     if hmac.compare_digest(password.encode(), expected.encode()) and account:
-        _failures.pop(key, None)
+        _failures.pop(bucket, None)
         return cl.User(identifier=key, metadata={"role": account[1], "name": account[2]})
-    _failures[key] = recent + [now]
-    if len(_failures) > 5000:               # bound memory under a guessing attack
-        _failures.clear()
+    _failures[bucket] = (recent + [now])[-MAX_FAILURES:]
     return None
 
 # ---------------------------------------------------------------- picker and starters
