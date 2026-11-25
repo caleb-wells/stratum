@@ -72,3 +72,21 @@
     return result;
   };
 })();
+
+// Tell phone browsers which colour to use for their own bars, and keep it in step with the
+// light/dark toggle.
+(function () {
+  function sync() {
+    var dark = document.documentElement.classList.contains("dark");
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.name = "theme-color";
+      document.head.appendChild(meta);
+    }
+    var colour = dark ? "#0b0e17" : "#f3f6fd";
+    if (meta.content !== colour) meta.content = colour;
+  }
+  sync();
+  new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+})();

@@ -349,3 +349,8 @@ body:has(form #password) [data-sonner-toaster] { display: none; }
 html.dark #root [id^="step-"] button[id^="step-"] { display: block; text-align: left; line-height: 1.45; }
 html.dark #root [id^="step-"] button[id^="step-"] > span { display: inline; margin-right: 0.35em; }
 html.dark #root [id^="step-"] button[id^="step-"] > svg { display: inline-block; vertical-align: middle; margin-left: 0.4rem; }
+
+/* phone browsers colour their status bar and toolbar from the page's plain background colour
+   (gradients do not count), so give the page one; otherwise those bars come out white */
+html.dark { background-color: #0b0e17; color-scheme: dark; }
+html.dark body { background-color: #0b0e17; }
