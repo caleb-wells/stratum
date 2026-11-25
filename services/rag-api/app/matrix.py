@@ -4,7 +4,9 @@ Search is good at the long tail and can still miss a section. For the handful of
 values that drive design, that is not acceptable, so they are extracted once per
 local code from the full text (`python -m app.ingest.cli matrix`), each with the
 exact sentence it came from, and stored in corpus/requirements-matrix.yaml. A cell
-is kept only if its quote is found word for word in the source.
+is kept only if its quote is found word for word in the source. That is the only
+automatic check: the summary sentence in each cell, and any "not specified" cell,
+is the extracting model's reading and has not been reviewed by an engineer.
 
 At answer time the cells for the cities in question are looked up exactly and sent
 to the model alongside the searched passages. They are an index into the source,

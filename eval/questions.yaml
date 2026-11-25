@@ -1,5 +1,6 @@
-# Evaluation set. Every gold answer was checked against the downloaded source text
-# (see corpus/sources.yaml). "silent" questions are traps: the right answer is that the
+# Evaluation set, written by Claude (an AI model). Each gold answer was written from the downloaded
+# source text and has not been reviewed by an engineer.
+# The source documents are listed in corpus/sources.yaml. "silent" questions are traps: the right answer is that the
 # named jurisdiction's loaded documents do not specify the thing asked.
 #
 # `sources` gives, per jurisdiction, exact text that a retrieved passage must contain.

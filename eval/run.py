@@ -1,4 +1,4 @@
-"""Run the evaluation: every question, in three modes, graded against verified gold answers.
+"""Run the evaluation: every question, in three modes, graded against gold answers written from the source text.
 
     docker compose -f deploy/docker-compose.yml --env-file deploy/.env exec rag-api \
         python /srv/eval/run.py            # all questions

@@ -1,6 +1,7 @@
 # Stratum
 
-Stratum keeps each local code in its own layer, searches each layer separately, and ties every claim in the answer to the exact source text.
+Stratum keeps each local code in its own layer, searches each layer separately, and links the
+claims in an answer to the source text they came from.
 
 The sample project is fictional. The regulations are real public documents, downloaded
 2026-11-24. This is decision support, not engineering advice: confirm requirements against
@@ -11,10 +12,12 @@ the currently adopted code.
 ## The problem with ordinary RAG
 
 Ordinary retrieval embeds every document into one pool and fetches the passages closest to
-the question. That fails here for a specific reason: the fault-setback clause in Draper's
-standards and the one in Fruit Heights' are nearly the same sentence. They sit next to each
-other in vector space, the model receives a mixture, and the answer comes out blended. More
-context does not help; it makes the mixing worse.
+the question. The codes here are a hard case for that: the fault-setback clauses in Draper's
+standards and in Fruit Heights' are worded almost identically, so passages from different
+cities compete for the same few places in the results. The model then sees one city's rule
+and not another's, or both without a clear owner. In the evaluation below, the pooled search
+most often left a city out or reported its code as missing; less often it attributed a rule
+to the wrong city.
 
 Three real differences in the loaded documents show what is at stake:
 
@@ -42,9 +45,10 @@ Three real differences in the loaded documents show what is at stake:
 6. **Tables are parsed as tables.** Plain PDF text extraction scrambled Draper's setback table
    (values landed on the wrong rows). Cells are read individually and written as
    self-describing rows.
-7. **Quote-level citations.** Passages go to Claude as separate cited documents. Each claim in
-   the answer links to the passage it came from. When a regulation is silent,
-   the answer says so instead of borrowing from a neighbour.
+7. **Quote-level citations.** Passages go to Claude as separate cited documents, and the
+   statements it cites link to the passage they came from. Citation is done by the model, so
+   an uncited sentence is possible. The prompt tells it to say so when a regulation is
+   silent instead of borrowing from a neighbour; it did in all four trap questions below.
 
 ```
 Browser -> Caddy (HTTPS) -> Chainlit app (login, saved chats, mode picker)
@@ -58,6 +62,9 @@ Browser -> Caddy (HTTPS) -> Chainlit app (login, saved chats, mode picker)
                        vectors, keywords,     Claude Opus 5.5 / Fable 5.2,
                        metadata filters       Titan embeddings, Cohere Rerank
 ```
+
+Fable 5.2 is supported in the code but switched off in the deployed site, which answers with
+Opus 5.5.
 
 ## Try the comparison yourself
 
@@ -91,7 +98,7 @@ when it is loaded.
 
 ## Results
 
-The set is 19 questions written from the verified source text: single-regulation facts,
+The set is 19 questions written from the source text: single-regulation facts,
 cross-regulation comparisons, "trap" questions where the right answer is "not specified
 here", and one report-drafting task. Each answer is graded by a second model call for
 correctness and for wrong-regulation errors, and search is checked separately. All three
@@ -113,8 +120,8 @@ Correct answers by question type:
 
 How to read this:
 
-- Naive retrieval handles single facts and falls apart on comparisons and traps, which is
-  where similar clauses from different codes get mixed.
+- Naive retrieval handled single facts and did poorly on comparisons and traps. Its usual
+  failure was leaving a city out or saying that city's code was not provided.
 - The grader flagged two Stratum answers about Fruit Heights for details it guessed belonged
   to another city (Table A-1, the Batatian and Nelson method, the Salt Lake City fault
   segment). All of them are in the Fruit Heights documents, so the flags are grader errors.
@@ -137,9 +144,10 @@ Read the numbers above as a direction, not a benchmark:
   retrieval scored 4/19 and naive RAG was flagged 5 times instead of 2.
 - **Graded by a model.** A second Claude call does the grading, and it makes mistakes: both
   flags against Stratum above were wrong. No engineer has graded the answers.
-- **Written by the builder.** The questions and reference answers were written by the same
-  person who built the system, from the same documents, and they target the differences
-  this design is meant to handle.
+- **Written by the same AI that wrote the system.** Claude wrote the questions and the
+  reference answers from the downloaded documents (see
+  [How this was built](#how-this-was-built)), and they target the differences this design is
+  meant to handle. The reference answers were not checked by an engineer.
 - **Overlaps the matrix.** Several questions ask for values the requirements matrix stores.
 - **Narrow corpus.** Three local codes and one statewide guideline, all from Utah, on
   geologic hazards. Nothing here shows how it behaves on other codes or more of them.
@@ -168,9 +176,14 @@ values per code (fault setback method and minimum, active fault definition, slop
 factors of safety, seismic coefficient, report validity) in
 [`corpus/requirements-matrix.yaml`](corpus/requirements-matrix.yaml), each with the sentence
 it came from, its section and page. A cell is kept only if its quote is found word for word
-in the source; where a code says nothing, the cell records that. At answer time the relevant
-cells are looked up exactly and sent with the searched passages. The values have not been
-reviewed by a licensed engineer.
+in the source; where a code says nothing, the cell records that. At answer time the routing
+step picks which cells the question touches, and those are read from the file and sent with
+the searched passages.
+
+What is and is not checked: the extraction is done by Claude. Only the quote is checked
+automatically. The one-sentence summary in each cell is the model's wording, and a "not
+specified" cell is the model's reading of the full text with nothing to check it against.
+None of it has been reviewed by a licensed engineer.
 
 ## Running it
 
@@ -192,13 +205,16 @@ npx cdk deploy -c domain=<subdomain> -c adminEmail=<you> -c guestEmail=<guest>
 # add a DNS A record for the subdomain pointing at the PublicIp output; HTTPS is automatic
 ```
 
-`cdk destroy` removes everything. `scripts/redeploy.sh` pushes code changes to the running server.
+`cdk destroy` removes the stack, including the server and the backup bucket. It leaves the
+generated passwords in Parameter Store and the container images in the CDK asset repository.
+`scripts/redeploy.sh` pushes code changes to the running server.
 
 ## Safeguards
 
 - Login required. There is no registration: the only accounts are the two set in the environment,
   and repeated failed sign-ins are throttled.
-- A daily token ceiling is reserved atomically before each request and settled afterwards.
+- A daily token ceiling on the answering model is reserved atomically before each request and
+  settled afterwards. The smaller routing, embedding and re-ranking calls are not counted.
 - The instance role may invoke only the specific Bedrock models used here.
 - Containers cannot reach the server's credential endpoint. Short-lived credentials are handed
   to the retrieval service alone, and the setup script refuses to go live if a check of that fails.
@@ -218,3 +234,17 @@ eval/              questions, runner, results
 ```
 
 The chat interface is built on [Chainlit](https://github.com/Chainlit/chainlit) (Apache 2.0).
+
+## How this was built
+
+This project was built by Caleb Wells working with Claude Code, Anthropic's AI coding agent.
+
+- **Caleb Wells** chose the problem and the idea of retrieval over the regulations, set the
+  constraints (AWS with CDK, Bedrock, a login, a monthly cost limit), chose Chainlit for the
+  interface, and directed the design, wording and scope by reviewing the running app.
+- **Claude** proposed the search-per-code design, the two baselines, the evaluation and the
+  requirements matrix. It found and downloaded the source documents and wrote the code, the
+  infrastructure, the evaluation questions and reference answers, and this README.
+
+No licensed engineer has reviewed the regulatory content, the reference answers or the
+requirements matrix.
