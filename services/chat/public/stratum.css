@@ -355,3 +355,10 @@ html.dark #root [id^="step-"] button[id^="step-"] > svg { position: absolute; ri
    (gradients do not count), so give the page one; otherwise those bars come out white */
 html.dark { background-color: #0b0e17; color-scheme: dark; }
 html.dark body { background-color: #0b0e17; }
+
+/* An avatar slot with no image (the search step's name is not a valid avatar id, so its
+   image request fails) shows the Stratum mark instead of an empty pulsing circle. */
+#root .ai-message > span > span.rounded-full:not(:has(img)) {
+  background: url("/public/mark.svg") center / cover no-repeat;
+}
+#root .ai-message > span > span.rounded-full:not(:has(img)) > span { visibility: hidden; }
