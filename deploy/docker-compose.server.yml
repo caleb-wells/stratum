@@ -1,0 +1,11 @@
+# Server only. No container can reach the instance metadata service (hop limit 1).
+# The host writes short-lived role credentials to a file every few minutes, and that file
+# is mounted read-only into the retrieval service alone. The AWS SDK reads it through
+# `credential_process` and picks up each refresh on its own.
+services:
+  rag-api:
+    environment:
+      AWS_CONFIG_FILE: /run/aws/config
+      AWS_EC2_METADATA_DISABLED: "true"
+    volumes:
+      - /opt/stratum/aws:/run/aws:ro

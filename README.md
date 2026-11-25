@@ -139,6 +139,8 @@ npx cdk deploy -c domain=<subdomain> -c adminEmail=<you> -c guestEmail=<guest>
 - Login required; self-registration is off; accounts are created by the bootstrap script.
 - A daily token ceiling is reserved atomically before each request and settled afterwards.
 - The instance role may invoke only the specific Bedrock models used here.
+- Containers cannot reach the server's credential endpoint. Short-lived credentials are handed
+  to the retrieval service alone, and the setup script refuses to go live if a check of that fails.
 - No SSH; access is through AWS Systems Manager. Secrets are generated on the instance and
   stored encrypted in Parameter Store.
 - An AWS Budget emails at 50% and 100% of the monthly limit.
