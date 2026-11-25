@@ -8,7 +8,6 @@ COPY services/rag-api/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY corpus /srv/corpus
-COPY services/openwebui /srv/services/openwebui
 COPY eval/questions.yaml eval/run.py /srv/eval/
 COPY services/rag-api/app ./app
 

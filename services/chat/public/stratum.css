@@ -1,0 +1,287 @@
+/* Stratum look for Chainlit.
+   Idea: layers. Translucent strata drift across a deep-water ground at different speeds,
+   and the interface sits above them as panes of glass. Colours come from theme.json;
+   this file adds the moving ground, the glass, and depth. */
+
+:root {
+  --st-night: #060914;
+  --st-deep: #0b1226;
+  --st-cyan: #4fd1e8;
+  --st-azure: #5b8def;
+  --st-violet: #9b7bff;
+  --st-edge: rgba(190, 205, 255, 0.16);
+  --st-edge-bright: rgba(190, 205, 255, 0.3);
+  --st-pane: linear-gradient(150deg, rgba(255, 255, 255, 0.12), rgba(148, 170, 255, 0.06) 45%, rgba(155, 123, 255, 0.07));
+  --st-pane-soft: linear-gradient(150deg, rgba(255, 255, 255, 0.07), rgba(148, 170, 255, 0.035));
+  --st-blur: blur(26px) saturate(165%);
+}
+
+@keyframes st-drift-left  { to { background-position-x: -1200px; } }
+@keyframes st-drift-right { to { background-position-x: 1200px; } }
+@keyframes st-float {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(5vw, -4vh, 0) scale(1.14); }
+}
+@keyframes st-rise {
+  from { opacity: 0; transform: translateY(14px) scale(0.99); filter: blur(5px); }
+  to   { opacity: 1; transform: none; filter: none; }
+}
+@keyframes st-sheen { to { background-position: 220% 0, 0 0; } }
+@keyframes st-breathe {
+  0%, 100% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 24px 60px -24px rgba(0, 0, 0, 0.8), 0 0 50px -30px var(--st-azure); }
+  50%      { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 24px 60px -24px rgba(0, 0, 0, 0.8), 0 0 70px -24px var(--st-violet); }
+}
+
+/* ============================== the ground ============================== */
+
+html.dark body {
+  background:
+    radial-gradient(70vw 55vh at 12% -5%, rgba(91, 141, 239, 0.24), transparent 70%),
+    radial-gradient(55vw 50vh at 100% 8%, rgba(155, 123, 255, 0.2), transparent 70%),
+    linear-gradient(180deg, var(--st-night), var(--st-deep) 65%, #0e1838) fixed;
+}
+/* a slow light and three strata at different depths, behind everything */
+html.dark body::before {
+  content: "";
+  position: fixed;
+  width: 46vmax; height: 46vmax;
+  left: 48%; top: -16%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(79, 209, 232, 0.3), rgba(91, 141, 239, 0.1) 45%, transparent 70%);
+  filter: blur(34px);
+  animation: st-float 24s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+html.dark body::after,
+html.dark #root::before,
+html.dark #root::after {
+  content: "";
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  background-repeat: repeat-x;
+  background-size: 1200px 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+html.dark body::after  { height: 46vh; background-image: url("/public/strata-3.svg"); opacity: 0.4;  animation: st-drift-right 150s linear infinite; }
+html.dark #root::before { height: 32vh; background-image: url("/public/strata-1.svg"); opacity: 0.5;  animation: st-drift-left 100s linear infinite; }
+html.dark #root::after  { height: 19vh; background-image: url("/public/strata-2.svg"); opacity: 0.55; animation: st-drift-right 64s linear infinite; }
+
+html.dark #root > * { position: relative; z-index: 1; }
+
+/* let the ground show through the app's own flat fills */
+html.dark #root .bg-background,
+html.dark #root [data-sidebar="sidebar"],
+html.dark #root main,
+html.dark #header {
+  background-color: transparent !important;
+}
+
+/* ============================== glass ============================== */
+
+/* sidebar */
+html.dark [data-sidebar="sidebar"] {
+  background: linear-gradient(180deg, rgba(148, 170, 255, 0.1), rgba(148, 170, 255, 0.04)) !important;
+  -webkit-backdrop-filter: var(--st-blur);
+  backdrop-filter: var(--st-blur);
+  box-shadow: inset -1px 0 0 var(--st-edge);
+}
+html.dark [data-sidebar="menu-button"] {
+  border-radius: 0.8rem;
+  transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+html.dark [data-sidebar="menu-button"]:hover,
+html.dark [data-sidebar="menu-button"][data-active="true"],
+html.dark [id^="thread-"] a.bg-accent,
+html.dark [id^="thread-"]:hover > a {
+  background: var(--st-pane) !important;
+  box-shadow: inset 0 0 0 1px var(--st-edge), 0 10px 26px -18px var(--st-azure);
+}
+
+/* the composer: the main pane of glass */
+html.dark #message-composer {
+  background: var(--st-pane) !important;
+  border: 1px solid var(--st-edge);
+  -webkit-backdrop-filter: var(--st-blur);
+  backdrop-filter: var(--st-blur);
+  animation: st-breathe 9s ease-in-out infinite;
+  transition: border-color 200ms ease;
+}
+html.dark #message-composer:focus-within {
+  border-color: rgba(79, 209, 232, 0.6);
+  animation: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 24px 60px -24px rgba(0, 0, 0, 0.8), 0 0 0 4px rgba(79, 209, 232, 0.13), 0 0 70px -20px var(--st-cyan);
+}
+html.dark #chat-input { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+html.dark #chat-submit {
+  background: linear-gradient(120deg, var(--st-cyan), var(--st-azure) 60%, var(--st-violet)) !important;
+  color: #061022 !important;
+  box-shadow: 0 8px 24px -8px rgba(91, 141, 239, 0.9);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+html.dark #chat-submit:hover:not(:disabled) { transform: translateY(-2px) scale(1.04); box-shadow: 0 14px 30px -8px rgba(79, 209, 232, 0.9); }
+
+/* messages: the user's bubble, answer tables, code, the search step */
+html.dark [data-step-type="user_message"] .bg-accent,
+html.dark .user-message .bg-accent,
+html.dark #root .message-content pre,
+html.dark #root [id^="step-"] > [role="region"],
+html.dark #root [id^="step-"] .border {
+  background: var(--st-pane-soft) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  backdrop-filter: blur(16px) saturate(150%);
+  box-shadow: inset 0 0 0 1px var(--st-edge), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+html.dark #root .rounded-3xl.bg-accent,
+html.dark #root .bg-accent.rounded-3xl {
+  background: linear-gradient(145deg, rgba(91, 141, 239, 0.26), rgba(155, 123, 255, 0.16)) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  backdrop-filter: blur(16px) saturate(150%);
+  box-shadow: inset 0 0 0 1px var(--st-edge-bright), 0 16px 40px -24px rgba(91, 141, 239, 0.8);
+}
+html.dark #root table {
+  background: var(--st-pane-soft);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-radius: 0.9rem;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--st-edge), 0 18px 40px -24px rgba(0, 0, 0, 0.7);
+}
+html.dark #root thead, html.dark #root th { background: rgba(148, 170, 255, 0.1) !important; }
+html.dark #root [id^="step-"] { animation: st-rise 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+/* the search step's label reads as one line, left-aligned */
+html.dark #root [id^="step-"] button[id^="step-"] { text-align: left; gap: 0.35rem; }
+
+/* answers often open with a title; keep headings in proportion to the text */
+html.dark #root [id^="step-"] h1 { font-size: 1.6rem; line-height: 1.2; letter-spacing: -0.015em; margin-top: 0.25rem; }
+html.dark #root [id^="step-"] h2 { font-size: 1.25rem; line-height: 1.3; }
+html.dark #root [id^="step-"] h3 { font-size: 1.05rem; }
+
+/* source chips */
+html.dark .element-link {
+  background: rgba(79, 209, 232, 0.12) !important;
+  color: #bfeef7 !important;
+  box-shadow: inset 0 0 0 1px rgba(79, 209, 232, 0.35);
+  padding: 0.1rem 0.5rem;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
+}
+html.dark .element-link:hover {
+  background: linear-gradient(120deg, var(--st-cyan), var(--st-azure)) !important;
+  color: #061022 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -8px var(--st-cyan);
+}
+
+/* starter cards and the profile picker */
+html.dark #root button[id^="starter-"],
+html.dark #chat-profiles {
+  background: var(--st-pane-soft) !important;
+  border: 1px solid var(--st-edge) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+html.dark #root button[id^="starter-"]:hover {
+  transform: translateY(-3px);
+  border-color: rgba(79, 209, 232, 0.5) !important;
+  box-shadow: 0 18px 40px -20px var(--st-cyan), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+/* floating layers: menus, pickers, tooltips, dialogs, the source viewer */
+html.dark [role="menu"],
+html.dark [role="listbox"],
+html.dark [role="dialog"],
+html.dark [role="tooltip"],
+html.dark [data-radix-popper-content-wrapper] > *,
+html.dark #root .bg-card,
+html.dark .bg-popover {
+  background: var(--st-pane) !important;
+  background-color: rgba(11, 18, 38, 0.55) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(170%);
+  backdrop-filter: blur(30px) saturate(170%);
+  border-color: var(--st-edge) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 30px 70px -20px rgba(0, 0, 0, 0.75), 0 0 60px -30px var(--st-azure);
+}
+html.dark [role="menuitem"]:hover,
+html.dark [role="option"]:hover,
+html.dark [role="option"][data-highlighted],
+html.dark [role="menuitem"][data-highlighted] {
+  background: rgba(148, 170, 255, 0.16) !important;
+}
+html.dark * { scrollbar-color: rgba(148, 170, 255, 0.28) transparent; }
+
+/* ============================== sign-in page ============================== */
+
+/* the form side becomes a pane floating over the artwork, which fills the page */
+html.dark .grid.min-h-svh,
+html.dark .grid.lg\:grid-cols-2 {
+  background:
+    linear-gradient(90deg, rgba(6, 9, 20, 0.86), rgba(6, 9, 20, 0.35) 55%, rgba(6, 9, 20, 0)),
+    url("/public/login.svg") center / cover no-repeat fixed;
+}
+html.dark .grid.lg\:grid-cols-2 > div { background: transparent !important; }
+html.dark .grid.lg\:grid-cols-2 > div.relative.hidden { visibility: hidden; }
+html.dark .grid.lg\:grid-cols-2 form {
+  padding: clamp(1.75rem, 3vw, 2.5rem);
+  border-radius: 1.6rem;
+  background: var(--st-pane);
+  -webkit-backdrop-filter: var(--st-blur);
+  backdrop-filter: var(--st-blur);
+  box-shadow: inset 0 0 0 1px var(--st-edge), inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 40px 90px -30px rgba(0, 0, 0, 0.8), 0 0 80px -34px var(--st-azure);
+  animation: st-rise 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+html.dark .grid.lg\:grid-cols-2 form h1 {
+  font-size: 1.75rem;
+  letter-spacing: -0.02em;
+  background: linear-gradient(100deg, #ffffff 25%, #bcd3ff 60%, var(--st-cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+html.dark .grid.lg\:grid-cols-2 form input {
+  background: rgba(6, 9, 20, 0.5) !important;
+  border-color: var(--st-edge) !important;
+  border-radius: 0.8rem;
+  height: 2.75rem;
+  transition: box-shadow 180ms ease, border-color 180ms ease;
+}
+html.dark .grid.lg\:grid-cols-2 form input:focus {
+  border-color: var(--st-cyan) !important;
+  box-shadow: 0 0 0 4px rgba(79, 209, 232, 0.16), 0 0 30px -8px var(--st-cyan) !important;
+  outline: none;
+}
+html.dark .grid.lg\:grid-cols-2 form input:-webkit-autofill {
+  -webkit-text-fill-color: #eaf0ff;
+  transition: background-color 9999s ease-out 0s;
+}
+html.dark .grid.lg\:grid-cols-2 form button[type="submit"] {
+  height: 2.9rem;
+  border-radius: 0.8rem;
+  font-weight: 600;
+  color: #061022 !important;
+  background:
+    linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.55) 48%, transparent 62%) -120% 0 / 220% 100% no-repeat,
+    linear-gradient(100deg, var(--st-cyan), var(--st-azure) 55%, var(--st-violet)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 10px 30px -10px rgba(91, 141, 239, 0.8);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+html.dark .grid.lg\:grid-cols-2 form button[type="submit"]:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 18px 40px -12px rgba(91, 141, 239, 0.95);
+  animation: st-sheen 900ms ease-out;
+}
+/* the logo on the sign-in page and in the app stays a modest mark */
+img.logo, img[alt="logo"] { max-height: 44px; width: auto; border-radius: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html.dark body::before, html.dark body::after, html.dark #root::before, html.dark #root::after,
+  html.dark #message-composer, html.dark #root [id^="step-"], html.dark .grid.lg\:grid-cols-2 form,
+  html.dark .grid.lg\:grid-cols-2 form button[type="submit"] {
+    animation: none !important;
+  }
+  html.dark #root button, html.dark .element-link { transition: none !important; transform: none !important; }
+}

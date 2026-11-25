@@ -4,7 +4,7 @@
     naive   - one pooled search across all jurisdictions (typical RAG baseline)
     none    - no retrieval at all (model memory only)
 
-Events yielded: {"type": "status"|"sources"|"delta"|"done"|"error", ...}
+Events yielded: {"type": "status"|"sources"|"delta"|"cite"|"done"|"error", ...}
 """
 from __future__ import annotations
 
@@ -59,8 +59,12 @@ def _document(p: Passage, plain: bool = False) -> dict:
             "source": {"type": "text", "media_type": "text/plain", "data": p.text}}
 
 
+def _file_for(url: str) -> str:
+    return next((d["file"] for d in proj.manifest()["documents"] if d["url"] == url), "")
+
+
 def _source(n: int, p: Passage) -> dict:
-    return {"n": n, "id": p.id, "jurisdiction": p.jurisdiction, "jurisdiction_name": p.jurisdiction_name,
+    return {"n": n, "id": p.id, "file": _file_for(p.url), "jurisdiction": p.jurisdiction, "jurisdiction_name": p.jurisdiction_name,
             "layer": p.layer, "title": p.title, "label": p.label, "doc_title": p.doc_title,
             "section": p.section_path,
             "pages": [p.page_start, p.page_end], "url": p.link, "text": p.text}
@@ -151,7 +155,7 @@ async def answer(mode: str, model_key: str, messages: list[dict],
                         if n not in pending:
                             pending.append(n)
                 elif event.type == "content_block_stop" and pending:
-                    yield {"type": "delta", "text": "".join(f"[{n}]" for n in pending)}
+                    yield {"type": "cite", "sources": pending}     # passages backing the text just sent
                     pending = []
             final = await stream.get_final_message()
         usage = {"input_tokens": final.usage.input_tokens

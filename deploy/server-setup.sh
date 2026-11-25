@@ -84,7 +84,7 @@ cat > .env <<ENV
 $(cat config.env)
 POSTGRES_PASSWORD=$(secret postgres-password 24)
 INTERNAL_API_KEY=$(secret internal-api-key 36)
-WEBUI_SECRET_KEY=$(secret webui-secret-key 48)
+CHAT_AUTH_SECRET=$(secret chat-auth-secret 48)
 ADMIN_PASSWORD=$(secret admin-password 18)
 DEMO_PASSWORD=$(secret guest-password 18)
 ENV
@@ -94,8 +94,8 @@ set -a; . ./.env; set +a
 registry="${RAG_API_IMAGE%%/*}"
 aws ecr get-login-password | docker login --username AWS --password-stdin "$registry" >/dev/null
 dc() { docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.server.yml --env-file .env "$@"; }
-dc pull -q postgres rag-api open-webui
-dc up -d --no-build postgres rag-api open-webui
+dc pull -q postgres rag-api chat
+dc up -d --no-build --remove-orphans postgres rag-api chat
 
 # --- load the corpus (re-embeds; takes about a minute) and check retrieval
 for i in $(seq 1 30); do dc exec -T rag-api python -c "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/healthz',timeout=3)" 2>/dev/null && break; sleep 4; done
@@ -106,9 +106,9 @@ dc exec -T rag-api python -c "from app import bedrock, config; r = bedrock.claud
 
 # --- prove no public-facing container can reach instance credentials. Fails closed:
 # only an explicit BLOCKED from a probe that really ran counts as a pass.
-for svc in open-webui postgres; do
-  if [ "$svc" = open-webui ]; then
-    probe=$(dc exec -T open-webui python3 -c "
+for svc in chat postgres; do
+  if [ "$svc" = chat ]; then
+    probe=$(dc exec -T chat python3 -c "
 import urllib.request, urllib.error
 req = urllib.request.Request('http://169.254.169.254/latest/api/token', method='PUT', headers={'X-aws-ec2-metadata-token-ttl-seconds': '60'})
 try:
@@ -125,9 +125,9 @@ except Exception: print('BLOCKED')" 2>&1 | tail -1) || probe="PROBE_FAILED"
 done
 echo "credential isolation ok"
 
-# --- accounts and the chat plugin, BEFORE the site is reachable from outside
-dc exec -T -e ADMIN_EMAIL -e ADMIN_PASSWORD -e ADMIN_NAME -e DEMO_EMAIL -e DEMO_PASSWORD -e DEMO_NAME \
-  rag-api python -m app.bootstrap_webui
+# --- the chat app must be answering before it is exposed (accounts come from its environment;
+# there is no first-user registration step to race)
+for i in $(seq 1 40); do dc exec -T chat python3 -c "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8080/',timeout=3)" 2>/dev/null && break; sleep 3; done
 
 # --- now open the front door (Caddy gets its certificate once DNS points here)
 dc --profile tls pull -q caddy
@@ -135,7 +135,7 @@ dc --profile tls up -d --no-build caddy
 
 # --- nightly database dump to S3 (chat history + usage log)
 cat > /etc/cron.d/stratum-backup <<CRON
-15 9 * * * root cd /opt/stratum && for db in rag; do docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.server.yml --env-file .env exec -T postgres pg_dump -U rag \$db | gzip | aws s3 cp - s3://$BACKUP_BUCKET/postgres/\$(date +\%F).sql.gz --region $AWS_REGION; done; docker run --rm -v geo-rag_openwebui:/data:ro alpine tar czf - -C /data . | aws s3 cp - s3://$BACKUP_BUCKET/openwebui/\$(date +\%F).tgz --region $AWS_REGION
+15 9 * * * root cd /opt/stratum && for db in rag chainlit; do docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.server.yml --env-file .env exec -T postgres pg_dump -U rag \$db | gzip | aws s3 cp - s3://$BACKUP_BUCKET/postgres/\$db-\$(date +\%F).sql.gz --region $AWS_REGION; done; true
 CRON
 dnf install -y cronie >/dev/null 2>&1 || true
 systemctl enable --now crond >/dev/null 2>&1 || true

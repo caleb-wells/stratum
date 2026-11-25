@@ -37,9 +37,11 @@ export class StratumStack extends cdk.Stack {
       platform: Platform.LINUX_ARM64,
       exclude: [".git", ".venv", "infra", "node_modules", "docs", "deploy/.env", ".playwright-mcp", "**/__pycache__"],
     });
-    const webImage = new DockerImageAsset(this, "WebUiImage", {
-      directory: path.join(repoRoot, "services", "openwebui"),
+    const chatImage = new DockerImageAsset(this, "ChatImage", {
+      directory: repoRoot,
+      file: "services/chat/Dockerfile",
       platform: Platform.LINUX_ARM64,
+      exclude: [".git", ".venv", "infra", "node_modules", "docs", "deploy/.env", ".playwright-mcp", "**/__pycache__"],
     });
 
     // ---- compose file, proxy config and the server script (never the local .env)
@@ -70,7 +72,7 @@ export class StratumStack extends cdk.Stack {
       managedPolicies: [iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonSSMManagedInstanceCore")],
     });
     ragImage.repository.grantPull(role);
-    webImage.repository.grantPull(role);
+    chatImage.repository.grantPull(role);
     bundle.grantRead(role);
     backups.grantReadWrite(role);
 
@@ -99,11 +101,11 @@ export class StratumStack extends cdk.Stack {
       description: "Stratum: non-secret deployment settings",
       stringValue: [
         `RAG_API_IMAGE=${ragImage.imageUri}`,
-        `WEBUI_IMAGE=${webImage.imageUri}`,
+        `CHAT_IMAGE=${chatImage.imageUri}`,
         `BUNDLE_S3_URL=${bundle.s3ObjectUrl}`,
         `BACKUP_BUCKET=${backups.bucketName}`,
         `SITE_DOMAIN=${props.domain}`,
-        `WEBUI_URL=https://${props.domain}`,
+        `SITE_URL=https://${props.domain}`,
         `ADMIN_EMAIL=${props.adminEmail}`,
         `ADMIN_NAME="${props.adminName}"`,
         `DEMO_EMAIL=${props.guestEmail}`,

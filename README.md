@@ -50,8 +50,9 @@ Three real differences in the loaded documents show what is at stake:
    the answer says so instead of borrowing from a neighbour.
 
 ```
-Browser -> Caddy (HTTPS) -> Open WebUI (login, chats, model picker)
-                               | Pipe function: status line + source chips
+Browser -> Caddy (HTTPS) -> Chainlit app (login, saved chats, mode picker)
+                               | shows what was searched; one chip per cited passage,
+                               | which opens the source PDF at the cited page
                                v
                           RAG API (FastAPI, private)
              +-----------------+--------------------+
@@ -63,7 +64,7 @@ Browser -> Caddy (HTTPS) -> Open WebUI (login, chats, model picker)
 
 ## Try the comparison yourself
 
-The model picker has three setups running the same Claude model:
+The picker at the top left has three setups running the same Claude model:
 
 - **Stratum** - the design above.
 - **Baseline · Naive RAG** - one pooled search on the raw question, generic prompt.
@@ -114,13 +115,10 @@ Sources and download checks are recorded in [`corpus/sources.yaml`](corpus/sourc
 Local (needs Docker and AWS credentials with Bedrock access):
 
 ```bash
-cp deploy/.env.example deploy/.env          # then fill in values
+cp deploy/.env.example deploy/.env          # then fill in values (the two logins are set here)
 docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.local.yml --env-file deploy/.env up -d --build
 docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.local.yml --env-file deploy/.env exec rag-api python -m app.ingest.cli load
 docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.local.yml --env-file deploy/.env exec rag-api python -m app.ingest.cli verify
-# create accounts and install the chat plugin (reads ADMIN_* / DEMO_* from the environment)
-docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.local.yml --env-file deploy/.env exec \
-  -e ADMIN_EMAIL -e ADMIN_PASSWORD -e DEMO_EMAIL -e DEMO_PASSWORD rag-api python -m app.bootstrap_webui
 open http://localhost:3000
 ```
 
@@ -136,7 +134,8 @@ npx cdk deploy -c domain=<subdomain> -c adminEmail=<you> -c guestEmail=<guest>
 
 ## Safeguards
 
-- Login required; self-registration is off; accounts are created by the bootstrap script.
+- Login required. There is no registration: the only accounts are the two set in the environment,
+  and repeated failed sign-ins are throttled.
 - A daily token ceiling is reserved atomically before each request and settled afterwards.
 - The instance role may invoke only the specific Bedrock models used here.
 - Containers cannot reach the server's credential endpoint. Short-lived credentials are handed
@@ -150,11 +149,11 @@ npx cdk deploy -c domain=<subdomain> -c adminEmail=<you> -c guestEmail=<guest>
 ```
 corpus/            source manifest, sample project, provenance
 services/rag-api/  routing, retrieval, generation, ingestion, spend guard
-services/openwebui/ chat plugin and theme for Open WebUI
+services/chat/     Chainlit frontend: sign-in, saved chats, source viewer, theme
 deploy/            Docker Compose stack, HTTPS proxy, server script
 infra/             AWS CDK (TypeScript)
 eval/              questions, runner, results
 PLAN.md            the build plan this was built from
 ```
 
-The chat interface is [Open WebUI](https://github.com/open-webui/open-webui), used under its licence with its branding intact.
+The chat interface is built on [Chainlit](https://github.com/Chainlit/chainlit) (Apache 2.0).

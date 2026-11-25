@@ -34,79 +34,40 @@ services:
       AWS_REGION: ${AWS_REGION:-us-west-2}
       DAILY_TOKEN_LIMIT: ${DAILY_TOKEN_LIMIT:-3000000}
 
-  open-webui:
-    image: ${WEBUI_IMAGE:-geo-rag-webui:local}
+  chat:
+    image: ${CHAT_IMAGE:-stratum-chat:local}
     build:
-      context: ../services/openwebui
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: services/chat/Dockerfile
     restart: unless-stopped
     depends_on:
-      - rag-api
+      postgres:
+        condition: service_healthy
+      rag-api:
+        condition: service_started
     environment:
-      WEBUI_NAME: ${WEBUI_NAME:-Stratum}
-      WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY:?set WEBUI_SECRET_KEY}
-      # Settings always come from this file, never from values saved in the database on an earlier run.
-      ENABLE_PERSISTENT_CONFIG: "false"
-      WEBUI_URL: ${WEBUI_URL:-http://localhost:3000}
+      DATABASE_URL: postgresql://rag:${POSTGRES_PASSWORD}@postgres:5432/chainlit
+      CHAINLIT_AUTH_SECRET: ${CHAT_AUTH_SECRET:?set CHAT_AUTH_SECRET}
+      CHAINLIT_URL: ${SITE_URL:-http://localhost:3000}
       RAG_API_URL: http://rag-api:8000
       RAG_API_KEY: ${INTERNAL_API_KEY}
       ENABLE_FABLE: ${ENABLE_FABLE:-false}
-      # Accounts: nobody can self-register. The first account (admin) is created by the bootstrap script.
-      ENABLE_SIGNUP: "false"
-      ENABLE_LOGIN_FORM: "true"
-      DEFAULT_USER_ROLE: user
-      ENABLE_API_KEYS: "false"
-      BYPASS_MODEL_ACCESS_CONTROL: "true"
-      # The only models are the ones our Pipe function exposes.
-      ENABLE_OLLAMA_API: "false"
-      ENABLE_OPENAI_API: "false"
-      ENABLE_DIRECT_CONNECTIONS: "false"
-      DEFAULT_MODELS: jurisdiction_rag.scoped-opus
-      # Turn off features that are not part of this demo (and would spend tokens or memory).
-      RAG_EMBEDDING_ENGINE: openai
-      BYPASS_EMBEDDING_AND_RETRIEVAL: "true"
-      ENABLE_WEB_SEARCH: "false"
-      ENABLE_IMAGE_GENERATION: "false"
-      ENABLE_CODE_EXECUTION: "false"
-      ENABLE_CODE_INTERPRETER: "false"
-      ENABLE_MEMORIES: "false"
-      ENABLE_NOTES: "false"
-      ENABLE_CHANNELS: "false"
-      ENABLE_CALENDAR: "false"
-      USER_PERMISSIONS_FEATURES_CALENDAR: "false"
-      ENABLE_USER_STATUS: "false"
-      ENABLE_PUBLIC_ACTIVE_USERS_COUNT: "false"
-      ENABLE_COMMUNITY_SHARING: "false"
-      ENABLE_EVALUATION_ARENA_MODELS: "false"
-      ENABLE_TAGS_GENERATION: "false"
-      ENABLE_FOLLOW_UP_GENERATION: "false"
-      ENABLE_AUTOCOMPLETE_GENERATION: "false"
-      ENABLE_SEARCH_QUERY_GENERATION: "false"
-      ENABLE_RETRIEVAL_QUERY_GENERATION: "false"
-      ENABLE_VERSION_UPDATE_CHECK: "false"
-      SHOW_ADMIN_DETAILS: "false"
-      ANONYMIZED_TELEMETRY: "false"
-      DO_NOT_TRACK: "true"
-      SCARF_NO_ANALYTICS: "true"
-      WEBUI_BANNERS: >-
-        [{"id":"demo-notice","type":"info","title":"","content":"The sample project is fictional; the regulations are real, downloaded 2026-11-24. Not engineering advice: confirm against the currently adopted code.","dismissible":true,"timestamp":1795564800}]
-      DEFAULT_PROMPT_SUGGESTIONS: >-
-        [{"title":["Compare all three sites","minimum slope stability factors of safety"],"content":"What minimum factors of safety apply to slope stability at each site, static and seismic? Show the differences."},
-         {"title":["Fault setbacks","how is the setback determined at each site?"],"content":"For each site, how is the required fault setback determined? Name the method each jurisdiction adopted and any minimum distance."},
-         {"title":["Site A only","how long is our geotechnical report valid?"],"content":"For Site A, how long is a geotechnical report valid, and what do we have to submit after that?"},
-         {"title":["Draft a report section","regulatory requirements for Site B"],"content":"Draft the 'Regulatory Requirements' section of the geologic hazards report for Site B. Cover fault investigation, slope stability and liquefaction, with the governing criteria."},
-         {"title":["Definitions that differ","what counts as an active fault?"],"content":"How does each jurisdiction in this project define an active fault? Does the definition change which faults we must set back from?"}]
-    volumes:
-      - openwebui:/app/backend/data
+      # Accounts. There is no self-registration; these are the only two logins.
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?set ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD}
+      ADMIN_NAME: ${ADMIN_NAME:-Admin}
+      DEMO_EMAIL: ${DEMO_EMAIL:-}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-}
+      DEMO_NAME: ${DEMO_NAME:-Guest}
     ports:
-      - "127.0.0.1:${WEBUI_PORT:-3000}:8080"
+      - "127.0.0.1:${CHAT_PORT:-3000}:8080"
 
   caddy:
     image: caddy:2-alpine
     profiles: ["tls"]            # started on the server only
     restart: unless-stopped
     depends_on:
-      - open-webui
+      - chat
     environment:
       SITE_DOMAIN: ${SITE_DOMAIN:-localhost}
     ports:
@@ -119,6 +80,5 @@ services:
 
 volumes:
   pgdata:
-  openwebui:
   caddy_data:
   caddy_config:

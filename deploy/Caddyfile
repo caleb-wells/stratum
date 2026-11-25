@@ -7,7 +7,7 @@
 		X-Robots-Tag "noindex, nofollow"
 		-Server
 	}
-	reverse_proxy open-webui:8080 {
+	reverse_proxy chat:8080 {
 		flush_interval -1
 	}
 }
