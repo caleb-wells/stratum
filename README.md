@@ -65,9 +65,9 @@ Browser -> Caddy (HTTPS) -> Open WebUI (login, chats, model picker)
 
 The model picker has three setups running the same Claude model:
 
-- **Jurisdiction-aware RAG** - the design above.
-- **Baseline: naive RAG** - one pooled search across everything.
-- **Baseline: no retrieval** - the model's memory only.
+- **Stratum** - the design above.
+- **Baseline · Naive RAG** - one pooled search on the raw question, generic prompt.
+- **Baseline · No retrieval** - the model's memory only.
 
 Ask all three: *"What minimum static factor of safety does the jurisdiction for Site C
 require for slope stability?"* The loaded Ogden Valley code does not give one. Only an
@@ -115,11 +115,11 @@ Local (needs Docker and AWS credentials with Bedrock access):
 
 ```bash
 cp deploy/.env.example deploy/.env          # then fill in values
-docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
-docker compose -f deploy/docker-compose.yml --env-file deploy/.env exec rag-api python -m app.ingest.cli load
-docker compose -f deploy/docker-compose.yml --env-file deploy/.env exec rag-api python -m app.ingest.cli verify
+docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.local.yml --env-file deploy/.env up -d --build
+docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.local.yml --env-file deploy/.env exec rag-api python -m app.ingest.cli load
+docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.local.yml --env-file deploy/.env exec rag-api python -m app.ingest.cli verify
 # create accounts and install the chat plugin (reads ADMIN_* / DEMO_* from the environment)
-docker compose -f deploy/docker-compose.yml --env-file deploy/.env exec \
+docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.local.yml --env-file deploy/.env exec \
   -e ADMIN_EMAIL -e ADMIN_PASSWORD -e DEMO_EMAIL -e DEMO_PASSWORD rag-api python -m app.bootstrap_webui
 open http://localhost:3000
 ```

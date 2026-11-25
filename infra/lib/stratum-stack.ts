@@ -129,11 +129,17 @@ export class StratumStack extends cdk.Stack {
       vpc,
       vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
       instanceType: new ec2.InstanceType(props.instanceType),
-      machineImage: ec2.MachineImage.latestAmazonLinux2023({ cpuType: ec2.AmazonLinuxCpuType.ARM_64 }),
+      // Cached in cdk.context.json so a newer AMI on a later deploy does not replace the instance.
+      machineImage: ec2.MachineImage.latestAmazonLinux2023({
+        cpuType: ec2.AmazonLinuxCpuType.ARM_64,
+        cachedInContext: true,
+      }),
       securityGroup: sg,
       role,
       userData,
       requireImdsv2: true,
+      httpPutResponseHopLimit: 2,        // containers reach the instance role through one extra hop
+      userDataCausesReplacement: false,
       blockDevices: [{
         deviceName: "/dev/xvda",
         volume: ec2.BlockDeviceVolume.ebs(30, { volumeType: ec2.EbsDeviceVolumeType.GP3, encrypted: true }),

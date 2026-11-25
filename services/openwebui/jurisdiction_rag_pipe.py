@@ -1,5 +1,5 @@
 """
-title: Jurisdiction-Aware Geotech RAG
+title: Stratum
 author: Caleb Wells
 version: 1.0.0
 description: Forwards chats to the private RAG API and shows which jurisdictions were searched, with a source chip for every cited passage.
@@ -12,10 +12,10 @@ from pydantic import BaseModel, Field
 
 # (id, label shown in the model picker, mode, answer model)
 MODELS = [
-    ("scoped-opus", "Jurisdiction-aware RAG · Claude Opus 5.5", "scoped", "opus"),
-    ("scoped-fable", "Jurisdiction-aware RAG · Claude Fable 5.2", "scoped", "fable"),
-    ("naive-opus", "Baseline: naive RAG · Claude Opus 5.5", "naive", "opus"),
-    ("none-opus", "Baseline: no retrieval · Claude Opus 5.5", "none", "opus"),
+    ("scoped-opus", "Stratum · Opus 5.5", "scoped", "opus"),
+    ("scoped-fable", "Stratum · Fable 5.2", "scoped", "fable"),
+    ("naive-opus", "Baseline · Naive RAG", "naive", "opus"),
+    ("none-opus", "Baseline · No retrieval", "none", "opus"),
 ]
 
 
@@ -73,13 +73,15 @@ class Pipe:
                         elif kind == "status":
                             await emit("status", {"description": event["text"], "done": event["done"]})
                         elif kind == "sources":
+                            # One source per passage, in order, each with its own id. The UI merges
+                            # sources that share an id, which would shift every [n] marker after it.
                             for s in event["sources"]:
-                                pages = s["pages"][0] if s["pages"][0] == s["pages"][1] else f"{s['pages'][0]}-{s['pages'][1]}"
+                                key = f"[{s['n']}] {s['label']}"
                                 await emit("citation", {
                                     "document": [s["text"]],
-                                    "metadata": [{"source": s["url"], "jurisdiction": s["jurisdiction_name"],
-                                                  "section": s["section"], "page": pages}],
-                                    "source": {"name": f"{s['title']} (p. {pages})", "url": s["url"]},
+                                    "metadata": [{"source": key, "name": key, "jurisdiction": s["jurisdiction_name"],
+                                                  "section": s["section"], "document": s["doc_title"]}],
+                                    "source": {"id": key, "name": key, "url": s["url"]},
                                 })
                         elif kind == "error":
                             yield f"\n\n**{event['text']}**"

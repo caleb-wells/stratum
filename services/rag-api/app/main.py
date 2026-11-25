@@ -21,7 +21,7 @@ async def lifespan(app: FastAPI):
     db.pool().close()
 
 
-app = FastAPI(title="Jurisdiction-aware RAG API", lifespan=lifespan)
+app = FastAPI(title="Stratum API", lifespan=lifespan)
 
 
 def require_key(x_api_key: str = Header(default="")):

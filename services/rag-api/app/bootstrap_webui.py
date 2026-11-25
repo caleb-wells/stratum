@@ -62,7 +62,7 @@ def main() -> None:
         print("admin account created")
     auth = {"Authorization": f"Bearer {token}"}
 
-    form = {"id": PIPE_ID, "name": "Jurisdiction-Aware Geotech RAG", "content": PIPE_FILE.read_text(),
+    form = {"id": PIPE_ID, "name": "Stratum", "content": PIPE_FILE.read_text(),
             "meta": {"description": "Jurisdiction-scoped retrieval with cited sources.", "manifest": {}}}
     existing = requests.get(f"{BASE}/api/v1/functions/id/{PIPE_ID}", headers=auth, timeout=30)
     if existing.ok and existing.json():

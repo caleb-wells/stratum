@@ -2,6 +2,8 @@
 # (see corpus/sources.yaml). "silent" questions are traps: the right answer is that the
 # named jurisdiction's loaded documents do not specify the thing asked.
 #
+# `sources` gives, per jurisdiction, exact text that a retrieved passage must contain.
+#
 # kind: single   - one jurisdiction, one fact
 #       compare  - same fact across jurisdictions that differ
 #       silent   - jurisdiction's documents do not address it
@@ -11,85 +13,85 @@ questions:
     kind: single
     question: For Site A, what minimum factor of safety is required for static slope stability?
     gold: "Draper City requires a minimum factor of safety of 1.5 for static (and surficial) slope stability."
-    sources: {draper: "4.0 FACTORS OF SAFETY"}
+    sources: {draper: "minimum required factors of safety follow"}
 
   - id: draper-report-validity
     kind: single
     question: How long is a geotechnical report valid for Site A before we have to update it?
     gold: "Draper City: geotechnical reports are valid for two years; after that the applicant must submit a letter from the geotechnical engineer confirming scope, registration, site conditions and compliance are unchanged."
-    sources: {draper: "11.0 AMENDED AND UPDATED"}
+    sources: {draper: "valid and applicable in the City for two years"}
 
   - id: draper-active-fault
     kind: single
     question: At Site A, how old can the most recent displacement on a Wasatch fault zone trace be for the fault to still count as active?
     gold: "Draper City defines an active Wasatch fault zone fault as one with displacement in the past 4,000 radiocarbon years (about 4,500 calibrated years) before present. For faults not associated with the Wasatch fault zone it uses the Holocene (10,000 radiocarbon / about 11,700 calendar years)."
-    sources: {draper: "ACTIVE FAULT"}
+    sources: {draper: "4,000 radiocarbon years"}
 
   - id: draper-setback-sfd
     kind: single
     question: What criticality factor U and minimum fault setback apply to a single-family dwelling at Site A?
     gold: "Draper City, Risk Category II(a) single-family dwellings: U = 1.5 and minimum setback 15 feet. The calculated setback (Lund and others 2020) is compared with this minimum and the greater governs."
-    sources: {draper: "8.1.3 Fault Setback Table"}
+    sources: {draper: "U4: 1.5; Minimum Setback (feet)4: 15"}
 
   - id: draper-temp-fs
     kind: single
     question: What factor of safety do temporary excavations need at Site A?
     gold: "Draper City: 1.3 for temporary excavations and slopes."
-    sources: {draper: "4.0 FACTORS OF SAFETY"}
+    sources: {draper: "minimum required factors of safety follow"}
 
   - id: fh-setback-method
     kind: single
     question: Which fault setback calculation method has the jurisdiction for Site B adopted?
     gold: "Fruit Heights City adopted the fault setback methodology for normal faults of Batatian and Nelson (1999) and Christenson and others (2003). Another method requires justification in the report."
-    sources: {fruit_heights: "2.4 Recommendations for fault setbacks"}
+    sources: {fruit_heights: "Batatian and Nelson (1999)"}
 
   - id: fh-setback-floor
     kind: single
     question: At Site B, what is the absolute minimum distance a habitable structure can be set back from a fault under the city code?
     gold: "Fruit Heights City code: setback is determined from the geological report but in no case less than fifteen feet; no habitable structure may be located over a fault."
-    sources: {fruit_heights: "10.10A.040"}
+    sources: {fruit_heights: "less than fifteen feet"}
 
   - id: fh-seismic-ground-motion
     kind: single
     question: What ground motion probability level must seismic slope stability analyses use at Site B?
     gold: "Fruit Heights City: peak accelerations with a 2.0 percent probability in 50 years (2,500-year return period)."
-    sources: {fruit_heights: "12.1 Ground Motion"}
+    sources: {fruit_heights: "2.0 percent probability in 50 years"}
 
   - id: fh-liquefaction-trigger
     kind: single
     question: In a liquefaction analysis for Site B, at what factor of safety must we estimate settlement for a soil layer?
     gold: "Fruit Heights City: if the factor of safety for liquefaction is less than 1, an estimate of settlement for each layer should be completed, and the total anticipated settlement reported."
-    sources: {fruit_heights: "1.3 Properties Requiring Liquefaction Analyses"}
+    sources: {fruit_heights: "factor of safety for liquefaction is less than 1"}
 
   - id: ov-fault-setback
     kind: single
     question: What is the minimum building setback from an active fault trace at Site C?
     gold: "Ogden Valley: building setbacks shall be a minimum of 50 feet from an active fault trace; a reduction may be considered if the report presents evidence to justify it."
-    sources: {ogden_valley: "Sec 108-22-2"}
+    sources: {ogden_valley: "minimum of 50 feet from an active fault trace"}
 
   - id: cmp-setback-method
     kind: compare
     question: Compare how the required fault setback is determined at each of the three sites.
     gold: "Draper City (Site A): formula method of Lund and others (2020), compared with a minimum from its Fault Setback Table by IBC risk category, greater governs. Fruit Heights City (Site B): formula method of Batatian and Nelson (1999) and Christenson and others (2003), compared with Table A-1 minimums by IBC occupancy class, greater governs; code floor of fifteen feet. Ogden Valley (Site C): no formula; flat minimum of 50 feet from an active fault trace, reducible with justification."
-    sources: {draper: "8.1 Active Fault Mitigation", fruit_heights: "2.4 Recommendations for fault setbacks", ogden_valley: "Sec 108-22-2"}
+    sources: {draper: "Lund and others (2020)", fruit_heights: "Batatian and Nelson (1999)", ogden_valley: "minimum of 50 feet from an active fault trace"}
 
   - id: cmp-slope-fs
     kind: compare
     question: What minimum factors of safety apply to slope stability at each site, static and seismic?
     gold: "Draper City: 1.5 static and surficial, 1.0 calibrated pseudostatic, 1.3 temporary. Fruit Heights City: 1.5 static (gross and surficial), 1.0 pseudostatic (Stewart et al. 2003), 1.3 temporary excavations. Ogden Valley: its loaded code does not specify numeric factors of safety."
-    sources: {draper: "4.0 FACTORS OF SAFETY", fruit_heights: "4.0 FACTORS OF SAFETY"}
+    sources: {draper: "minimum required factors of safety follow", fruit_heights: "static factor of safety is 1.5"}
 
   - id: cmp-active-fault-definition
     kind: compare
     question: Does the age cut-off used to decide whether a fault is active differ between Site A and Site B?
     gold: "Yes. Draper City (Site A) uses displacement within the past 4,000 radiocarbon years (about 4,500 calibrated years) for Wasatch fault zone traces, and the Holocene for other faults. Fruit Heights City (Site B) evaluates activity against the Holocene (about 10,000 years), using Bonneville lake cycle deposits as a datum."
-    sources: {draper: "ACTIVE FAULT", fruit_heights: "2.2.7 Age dating"}
+    sources: {draper: "4,000 radiocarbon years", fruit_heights: "older than 10,000 years"}
 
   - id: cmp-pseudostatic-method
     kind: compare
     question: Is the seismic coefficient for pseudostatic slope stability analysis chosen the same way at Site A and Site B?
     gold: "No. Draper City (Site A) uses a seismic coefficient kh equal to one half of PGAM, with PGAM at 2 percent probability of exceedance in 50 years. Fruit Heights City (Site B) uses the Stewart et al. (2003) / Blake et al. (2002) screening procedure, where kh is selected from seismic source characteristics and an acceptable deformation level."
-    sources: {draper: "10.2 Seismic (Pseudostatic)", fruit_heights: "12.2 Pseudo-Static Evaluations"}
+    sources: {draper: "the PGAM", fruit_heights: "Stewart et al. (2003)"}
 
   - id: silent-ov-fs
     kind: silent
@@ -113,10 +115,10 @@ questions:
     kind: silent
     question: Which published fault setback formula does the jurisdiction for Site C require us to use?
     gold: "Ogden Valley's loaded code does not adopt a setback formula or named method. It sets a minimum setback of 50 feet from an active fault trace, reducible with justification. Lund and others (2020) and Batatian and Nelson (1999) belong to Draper and Fruit Heights respectively."
-    sources: {ogden_valley: "Sec 108-22-2"}
+    sources: {ogden_valley: "minimum of 50 feet from an active fault trace"}
 
   - id: draft-requirements-summary
     kind: draft
     question: Draft a short 'Governing Criteria' paragraph for each of the three sites covering fault setback and slope stability factors of safety, suitable for the combined client summary.
     gold: "Site A (Draper City): setback by Lund and others (2020) compared with the Fault Setback Table minimum, greater governs (single-family dwellings U 1.5, 15 ft minimum); slope stability 1.5 static/surficial, 1.0 pseudostatic, 1.3 temporary. Site B (Fruit Heights City): setback by Batatian and Nelson (1999) / Christenson and others (2003) compared with Table A-1, greater governs, never less than fifteen feet; slope stability 1.5 static, 1.0 pseudostatic, 1.3 temporary. Site C (Ogden Valley): minimum 50 ft from an active fault trace, reducible with justification; no numeric factor of safety specified in the loaded code. Requirements must not be mixed between sites."
-    sources: {draper: "8.1", fruit_heights: "2.4 Recommendations for fault setbacks", ogden_valley: "Sec 108-22-2"}
+    sources: {draper: "Lund and others (2020)", fruit_heights: "Batatian and Nelson (1999)", ogden_valley: "minimum of 50 feet from an active fault trace"}

@@ -132,7 +132,10 @@ def _in_order(num: str, last: str | None) -> bool:
     if new[0] == old[0]:
         n = min(len(new), len(old))
         diff = next((i for i in range(n) if new[i] != old[i]), None)
-        return diff is None or new[diff] - old[diff] <= 2
+        if diff is None:
+            return True
+        # "2.2.4" -> "2.3" or "2.3.1" is a real step; "2.2.4" -> "2.3.5" is a cross-reference in body text
+        return new[diff] - old[diff] <= 2 and all(x <= 1 for x in new[diff + 1:])
     return new[0] - old[0] <= 2 and all(x <= 2 for x in new[1:])
 
 

@@ -5,7 +5,7 @@
         python /srv/eval/run.py --limit 3  # quick smoke run
 
 Two measurements per answer:
-  * retrieval hit  - did the passages for each expected jurisdiction include the gold section?
+  * retrieval hit  - did the passages for each expected jurisdiction contain the gold text?
                      (not applicable to the no-retrieval mode)
   * graded answer  - a separate model call compares the answer with the gold answer and
                      reports `correct` and `contaminated` (a requirement attributed to the
@@ -81,7 +81,7 @@ async def grade(question: str, gold: str, answer: str) -> dict:
 def retrieval_hit(sources: dict, passages) -> bool | None:
     if not sources:
         return None
-    return all(any(p.jurisdiction == j and needle in p.section_path for p in passages)
+    return all(any(p.jurisdiction == j and needle in p.text for p in passages)
                for j, needle in sources.items())
 
 

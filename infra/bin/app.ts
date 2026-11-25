@@ -14,7 +14,7 @@ const required = (key: string): string => {
 
 new StratumStack(app, "Stratum", {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION ?? "us-west-2" },
-  description: "Stratum: jurisdiction-aware geotechnical RAG demo (single instance)",
+  description: "Stratum demo (single instance)",
   domain: required("domain"),
   adminEmail: required("adminEmail"),
   adminName: String(app.node.tryGetContext("adminName") ?? "Admin"),

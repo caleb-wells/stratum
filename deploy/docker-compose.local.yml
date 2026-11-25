@@ -1,0 +1,7 @@
+# Local development only: pass the shell's AWS credentials to the retrieval service.
+services:
+  rag-api:
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?export AWS credentials first}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?export AWS credentials first}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-}

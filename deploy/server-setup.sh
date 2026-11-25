@@ -56,6 +56,8 @@ dc up -d --no-build postgres rag-api open-webui
 for i in $(seq 1 30); do dc exec -T rag-api python -c "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/healthz',timeout=3)" 2>/dev/null && break; sleep 4; done
 dc exec -T rag-api python -W ignore -m app.ingest.cli load
 dc exec -T rag-api python -W ignore -m app.ingest.cli verify
+# one real model call through the instance role, so a permissions problem shows up here
+dc exec -T rag-api python -c "from app import bedrock, config; r = bedrock.claude().messages.create(model=config.ROUTER_MODEL, max_tokens=20, messages=[{'role':'user','content':'Reply with: ok'}]); print('bedrock ok:', r.stop_reason)"
 
 # --- accounts and the chat plugin, BEFORE the site is reachable from outside
 dc exec -T -e ADMIN_EMAIL -e ADMIN_PASSWORD -e ADMIN_NAME -e DEMO_EMAIL -e DEMO_PASSWORD -e DEMO_NAME \

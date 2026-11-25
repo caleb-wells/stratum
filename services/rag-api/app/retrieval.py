@@ -40,6 +40,16 @@ class Passage:
         return f"{self.jurisdiction_name} | {self.section_path}"
 
     @property
+    def label(self) -> str:
+        """Compact name for a source chip, e.g. "Draper 8.1.3 (p. 36)". The chip is narrow."""
+        short = {"utah_ugs": "UGS guidance"}.get(
+            self.jurisdiction, self.jurisdiction_name.replace(" City", ""))
+        section = self.section_path.rsplit(" > ", 1)[-1]
+        m = re.match(r"(Sec [\d-]+|[\d.]*\d[A-Z]?(?:\.\d+)*)\s", section)
+        ref = m.group(1) if m else " ".join(section.split()[:3])
+        return f"{short} {ref} (p. {self.page_start})"
+
+    @property
     def link(self) -> str:
         return f"{self.url}#page={self.page_start}"
 
@@ -115,14 +125,14 @@ def _expand_sections(hits: list[Passage]) -> list[Passage]:
     minimums in 8.1.3). When retrieval has clearly landed in a section, the
     neighbours are cheap to add and are what a human reader would look at next.
     """
-    parents: dict[tuple[str, str], int] = {}
+    parents: dict[tuple[str, str, str], int] = {}
     for p in hits:
         if " > " in p.section_path:
-            key = (p.doc_title, p.section_path.rsplit(" > ", 1)[0])
+            key = (p.jurisdiction, p.doc_title, p.section_path.rsplit(" > ", 1)[0])
             parents[key] = parents.get(key, 0) + 1
     have = {p.id for p in hits}
     extra: list[Passage] = []
-    for (doc_title, parent), n in sorted(parents.items(), key=lambda kv: -kv[1]):
+    for (jurisdiction, doc_title, parent), n in sorted(parents.items(), key=lambda kv: -kv[1]):
         room = config.SECTION_EXPANSION - len(extra)
         if n < 2 or room <= 0 or parent.count(" > ") < 1:
             continue
@@ -130,7 +140,7 @@ def _expand_sections(hits: list[Passage]) -> list[Passage]:
             rows = c.execute(
                 f"SELECT {_COLS} FROM chunks WHERE doc_title = %s AND jurisdiction = %s "
                 "AND starts_with(section_path, %s) AND NOT (id = ANY(%s)) ORDER BY seq LIMIT %s",
-                (doc_title, hits[0].jurisdiction, parent, list(have), room)).fetchall()
+                (doc_title, jurisdiction, parent, list(have), room)).fetchall()
         for row in rows:
             extra.append(Passage(**row))
             have.add(row["id"])

@@ -30,6 +30,14 @@ Rules:
 - Be concise and practical. Write for a practicing geotechnical engineer. Do not add a list of sources at the end; citations are attached automatically.
 - This is decision support. Where a requirement drives design, remind the reader once, briefly, to confirm against the currently adopted code."""
 
+# The naive baseline is what a typical RAG setup looks like: one pooled search on the raw
+# question, a generic "answer from the documents" prompt, and no jurisdiction handling.
+SYSTEM_NAIVE = """You are a geotechnical engineering assistant helping a consulting firm prepare geologic-hazard and geotechnical reports.
+
+{project}
+
+Answer the question using the provided documents. Be concise and practical. Write for a practicing geotechnical engineer. Do not add a list of sources at the end; citations are attached automatically."""
+
 SYSTEM_NONE = """You are a geotechnical engineering assistant helping a consulting firm prepare geologic-hazard and geotechnical reports for a project whose sites fall under different local jurisdictions.
 
 {project}
@@ -40,8 +48,12 @@ LIMIT_MESSAGE = ("The daily usage limit for this demo has been reached. It reset
                  "Please try again tomorrow, or contact Caleb to raise the limit.")
 
 
-def _document(p: Passage) -> dict:
-    return {"type": "document", "title": p.title, "citations": {"enabled": True},
+def _document(p: Passage, plain: bool = False) -> dict:
+    if plain:       # baseline: the document's own title and section, as a typical pipeline would pass
+        return {"type": "document", "title": f"{p.doc_title} | {p.section_path}"[:480],
+                "citations": {"enabled": True},
+                "source": {"type": "text", "media_type": "text/plain", "data": p.text}}
+    return {"type": "document", "title": p.title[:480], "citations": {"enabled": True},
             "context": f"Source: {p.doc_title}. Pages {p.page_start}-{p.page_end}. "
                        f"{'Statewide guidance, not local law.' if p.layer == 'state' else 'Local requirement.'}",
             "source": {"type": "text", "media_type": "text/plain", "data": p.text}}
@@ -49,7 +61,8 @@ def _document(p: Passage) -> dict:
 
 def _source(n: int, p: Passage) -> dict:
     return {"n": n, "id": p.id, "jurisdiction": p.jurisdiction, "jurisdiction_name": p.jurisdiction_name,
-            "layer": p.layer, "title": p.title, "doc_title": p.doc_title, "section": p.section_path,
+            "layer": p.layer, "title": p.title, "label": p.label, "doc_title": p.doc_title,
+            "section": p.section_path,
             "pages": [p.page_start, p.page_end], "url": p.link, "text": p.text}
 
 
@@ -62,11 +75,12 @@ def retrieve(mode: str, messages: list[dict], project: dict) -> tuple[Route | No
     """Run routing + retrieval for a mode. Returns passages in prompt order."""
     if mode == "none":
         return None, []
+    if mode == "naive":                         # no routing, no query rewriting: just the question
+        question = _text(messages[-1]["content"])[:config.MAX_MESSAGE_CHARS]
+        return None, search_pooled(question, [question[:1000]])
     r = route(messages, project)
     if not r.needs_retrieval:
         return r, []
-    if mode == "naive":
-        return r, search_pooled(r.question, r.queries)
     state = project.get("state_guidance", []) if r.include_state else []
     by_j = search_scoped(r.question, r.queries, r.jurisdictions, state)
     ordered = [p for j in r.jurisdictions + state for p in by_j.get(j, [])]
@@ -75,14 +89,15 @@ def retrieve(mode: str, messages: list[dict], project: dict) -> tuple[Route | No
 
 def build_request(mode: str, model_key: str, messages: list[dict], project: dict,
                   passages: list[Passage]) -> dict:
-    system = (SYSTEM_NONE if mode == "none" else SYSTEM_GROUNDED).format(project=proj.describe(project))
+    template = {"none": SYSTEM_NONE, "naive": SYSTEM_NAIVE}.get(mode, SYSTEM_GROUNDED)
+    system = template.format(project=proj.describe(project))
     history = [{"role": m["role"], "content": _text(m["content"])[:config.MAX_MESSAGE_CHARS]}
                for m in messages[:-1][-config.MAX_HISTORY_MESSAGES:]
                if m["role"] in ("user", "assistant") and _text(m["content"]).strip()]
     while history and history[0]["role"] != "user":      # a trimmed history must start with the user
         history.pop(0)
     question = _text(messages[-1]["content"])[:config.MAX_MESSAGE_CHARS]
-    content: list[dict] = [_document(p) for p in passages]
+    content: list[dict] = [_document(p, plain=(mode == "naive")) for p in passages]
     content.append({"type": "text", "text": question})
     return {
         "model": config.ANSWER_MODELS[model_key],
@@ -113,7 +128,7 @@ async def answer(mode: str, model_key: str, messages: list[dict],
     if mode != "none":
         yield {"type": "status", "text": "Working out which jurisdictions this concerns", "done": False}
     r, passages = await asyncio.to_thread(retrieve, mode, messages, project)
-    if r is not None:
+    if mode != "none":
         if mode == "scoped":
             names = ", ".join(proj.jurisdiction_name(j) for j in r.jurisdictions)
             label = f"Searched separately: {names}" + (" + statewide guidance" if r.include_state else "")

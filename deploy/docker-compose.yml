@@ -1,4 +1,6 @@
-# The whole application. Local run:  docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
+# The whole application. On the server the rag-api container uses the instance role.
+# Local run (adds your shell's AWS credentials):
+#   docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.local.yml --env-file deploy/.env up -d --build
 name: geo-rag
 
 services:
@@ -31,10 +33,6 @@ services:
       INTERNAL_API_KEY: ${INTERNAL_API_KEY:?set INTERNAL_API_KEY}
       AWS_REGION: ${AWS_REGION:-us-west-2}
       DAILY_TOKEN_LIMIT: ${DAILY_TOKEN_LIMIT:-3000000}
-      # Local development only. On EC2 these are empty and the instance role is used.
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
-      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-}
 
   open-webui:
     image: ${WEBUI_IMAGE:-geo-rag-webui:local}
@@ -47,6 +45,8 @@ services:
     environment:
       WEBUI_NAME: ${WEBUI_NAME:-Stratum}
       WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY:?set WEBUI_SECRET_KEY}
+      # Settings always come from this file, never from values saved in the database on an earlier run.
+      ENABLE_PERSISTENT_CONFIG: "false"
       WEBUI_URL: ${WEBUI_URL:-http://localhost:3000}
       RAG_API_URL: http://rag-api:8000
       RAG_API_KEY: ${INTERNAL_API_KEY}
@@ -72,6 +72,10 @@ services:
       ENABLE_MEMORIES: "false"
       ENABLE_NOTES: "false"
       ENABLE_CHANNELS: "false"
+      ENABLE_CALENDAR: "false"
+      USER_PERMISSIONS_FEATURES_CALENDAR: "false"
+      ENABLE_USER_STATUS: "false"
+      ENABLE_PUBLIC_ACTIVE_USERS_COUNT: "false"
       ENABLE_COMMUNITY_SHARING: "false"
       ENABLE_EVALUATION_ARENA_MODELS: "false"
       ENABLE_TAGS_GENERATION: "false"
