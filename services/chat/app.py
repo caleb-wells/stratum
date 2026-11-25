@@ -177,7 +177,10 @@ async def answer(message: cl.Message):
                     kind = event["type"]
                     if kind == "status":
                         if step is None:          # the UI prefixes step names with "Using" / "Used"
-                            step = cl.Step(name="the project documents", type="retrieval")
+                            # same parent as the reply, so the step is drawn above the answer and not after it
+                            run = cl.context.current_run
+                            step = cl.Step(name="the project documents", type="retrieval",
+                                           parent_id=run.id if run else None)
                             step.start = _now()          # without a start time the step sorts below the answer
                             await step.send()
                     elif kind == "sources":
