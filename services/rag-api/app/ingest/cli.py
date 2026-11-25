@@ -3,6 +3,7 @@
     python -m app.ingest.cli download   # fetch source PDFs listed in corpus/sources.yaml
     python -m app.ingest.cli load       # parse, embed and (re)load every chunk
     python -m app.ingest.cli verify     # counts + known-fact retrieval checks
+    python -m app.ingest.cli matrix     # extract the requirements matrix from the full text
 """
 from __future__ import annotations
 
@@ -94,6 +95,11 @@ if __name__ == "__main__":
         download()
     elif cmd == "load":
         load()
+    elif cmd == "matrix":
+        import yaml
+        from .. import matrix
+        matrix.PATH.write_text(yaml.safe_dump(matrix.extract(), sort_keys=False, width=100, allow_unicode=True))
+        print(f"wrote {matrix.PATH}")
     elif cmd == "verify":
         sys.exit(0 if verify() else 1)
     else:

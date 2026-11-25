@@ -34,9 +34,12 @@ class Passage:
     page_end: int
     text: str
     score: float = 0.0
+    matrix: str = ""       # set on requirements-matrix cells: the parameter's name
 
     @property
     def title(self) -> str:
+        if self.matrix:
+            return f"{self.jurisdiction_name} | Requirements matrix | {self.matrix}"
         return f"{self.jurisdiction_name} | {self.section_path}"
 
     @property

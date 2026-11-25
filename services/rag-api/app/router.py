@@ -10,7 +10,7 @@ import json
 import re
 from dataclasses import asdict, dataclass
 
-from . import bedrock, config, project as proj
+from . import bedrock, config, matrix, project as proj
 
 PROMPT = """You route questions for a geotechnical engineering assistant.
 
@@ -24,6 +24,7 @@ Given the conversation, decide:
 3. "question": the latest question restated as one standalone sentence, with pronouns and follow-ups resolved from the conversation, and without site names or jurisdiction names.
 4. "queries": 1 to 3 short standalone search queries that capture what must be looked up, written without site names or jurisdiction names (those are applied as filters). Resolve pronouns and follow-ups using the conversation.
 5. "needs_retrieval": false only for greetings or questions unrelated to engineering requirements.
+6. "parameters": which of these key values the question touches, as a list of ids (empty if none): {parameters}. For report drafting or broad summaries include every one that could belong in the answer.
 
 Reply with one JSON object and nothing else."""
 
@@ -36,6 +37,7 @@ class Route:
     needs_retrieval: bool = True
     question: str = ""
     fallback: bool = False
+    parameters: list[str] | None = None    # requirements-matrix cells to pin; None = all of them
 
     def dict(self) -> dict:
         return asdict(self)
@@ -57,15 +59,19 @@ def route(messages: list[dict], project: dict) -> Route:
     try:
         resp = bedrock.claude().messages.create(
             model=config.ROUTER_MODEL, max_tokens=1500,
-            system=PROMPT.format(project=proj.describe(project), valid=", ".join(local)),
+            system=PROMPT.format(project=proj.describe(project), valid=", ".join(local),
+                                 parameters="; ".join(f"{k} ({v[0]})" for k, v in matrix.PARAMETERS.items())),
             messages=[{"role": "user", "content": _conversation(messages)}],
         )
         text = "".join(b.text for b in resp.content if b.type == "text")
         data = json.loads(re.search(r"\{.*\}", text, re.S).group(0))
         chosen = [j for j in data.get("jurisdictions", []) if j in local] or local
         queries = [q.strip() for q in data.get("queries", []) if isinstance(q, str) and q.strip()][:3]
+        picked = data.get("parameters")       # anything malformed pins every cell instead of none
+        parameters = ([p for p in picked if p in matrix.PARAMETERS]
+                      if isinstance(picked, list) and all(isinstance(p, str) for p in picked) else None)
         return Route(chosen, bool(data.get("include_state", True)), queries or fallback.queries,
                      bool(data.get("needs_retrieval", True)),
-                     str(data.get("question") or question)[:600])
+                     str(data.get("question") or question)[:600], parameters=parameters)
     except Exception:
         return fallback

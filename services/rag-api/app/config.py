@@ -9,7 +9,7 @@ DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://rag:rag@localhost:5433/ra
 CORPUS_ROOT = Path(os.getenv("CORPUS_ROOT", Path(__file__).resolve().parents[3]))
 INTERNAL_API_KEY = os.getenv("INTERNAL_API_KEY", "dev-key")
 
-# Bedrock identifiers, confirmed with live calls on 2026-11-24 (see PLAN.md, Phase 0).
+# Bedrock identifiers, confirmed with live calls on 2026-11-24.
 EMBED_MODEL = os.getenv("EMBED_MODEL", "amazon.titan-embed-text-v2:0")
 EMBED_DIMS = 1024
 RERANK_MODEL = os.getenv("RERANK_MODEL", "cohere.rerank-v3-5:0")

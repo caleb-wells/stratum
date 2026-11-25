@@ -121,9 +121,13 @@ def _searched_summary(sources: list[dict]) -> str:
         groups.setdefault(s["jurisdiction_name"], []).append(s)
     lines = []
     for name, items in groups.items():
-        lines.append(f"**{name}** ({len(items)} passages)")
+        searched = [s for s in items if not s.get("matrix")]
+        lines.append(f"**{name}** ({len(searched)} passages)")
+        keyed = [s["matrix"] for s in items if s.get("matrix")]
+        if keyed:                             # looked up exactly from the requirements matrix
+            lines.append(f"- Key values: {', '.join(keyed)}")
         seen = []
-        for s in items:
+        for s in searched:
             entry = f"{s['section'].rsplit(' > ', 1)[-1]} (p. {s['pages'][0]})"
             if entry not in seen:
                 seen.append(entry)
@@ -133,14 +137,16 @@ def _searched_summary(sources: list[dict]) -> str:
 
 
 def _search_label(mode: str, sources: list[dict]) -> str:
-    n = len(sources)
+    keyed = sum(1 for s in sources if s.get("matrix"))
+    n = len(sources) - keyed
     if mode != "scoped":
         return f"all documents ({n} passages)"
     names = []
     for s in sources:
         if s["jurisdiction_name"] not in names:
             names.append(s["jurisdiction_name"])
-    return f"{', '.join(names)} ({n} passages)" if names else "no documents"
+    count = f"{n} passages" + (f", {keyed} key values" if keyed else "")
+    return f"{', '.join(names)} ({count})" if names else "no documents"
 
 
 @cl.on_message

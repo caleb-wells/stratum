@@ -114,21 +114,20 @@ questions: treat the numbers as a direction, not a benchmark.
 Sources and download checks are recorded in [`corpus/sources.yaml`](corpus/sources.yaml) and
 [`corpus/provenance.json`](corpus/provenance.json). No paywalled standards are included.
 
-## What I would do next
+## Requirements matrix
 
-- **A requirements matrix for the numbers that must never be wrong.** Extract the critical
-  parameters per regulation once (factors of safety, setback method, report validity), have
-  an engineer confirm them, and look them up exactly at drafting time. Retrieval then covers
-  the long tail; the matrix covers the values a report cannot get wrong.
-- **Resolve the governing regulations from the map.** Where projects are already placed on a map, a
-  point-in-polygon lookup against city and county boundaries would pick the regulations
-  that apply automatically, including overlapping layers (city, county, state).
-- **Track amendments.** Re-download sources on a schedule, diff by section, and flag reports
-  drafted against superseded text.
-- **Per-firm overlays.** A firm's own standards and past reviewer comments become another
-  layer with the same isolation.
-- **Evaluation in CI.** The question set here runs in minutes; every prompt, model or
-  retrieval change should have to pass it.
+Search can still miss a section, so the few values a report cannot get wrong are not left to
+it. `python -m app.ingest.cli matrix` reads each local code in full once and records eight
+values per code (fault setback method and minimum, active fault definition, slope stability
+factors of safety, seismic coefficient, report validity) in
+[`corpus/requirements-matrix.yaml`](corpus/requirements-matrix.yaml), each with the sentence
+it came from, its section and page. A cell is kept only if its quote is found word for word
+in the source; where a code says nothing, the cell records that. At answer time the relevant
+cells are looked up exactly and sent with the searched passages. The values have not been
+reviewed by a licensed engineer.
+
+The results above were measured before the matrix was added. With it, the drafting question
+that failed is answered correctly; the full set has not been re-run yet.
 
 ## Running it
 

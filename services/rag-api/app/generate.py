@@ -11,7 +11,7 @@ from __future__ import annotations
 import time
 from typing import AsyncIterator
 
-from . import bedrock, config, db, project as proj
+from . import bedrock, config, db, matrix, project as proj
 from .retrieval import Passage, search_pooled, search_scoped
 from .router import Route, route
 
@@ -25,6 +25,7 @@ Rules:
 - Requirements are jurisdiction-specific. State each jurisdiction's requirement separately and name the jurisdiction every time. Never apply one jurisdiction's requirement to another jurisdiction's site.
 - Use only the provided documents for requirements, numbers, methods and definitions. Quote numbers and named methods exactly as written.
 - If the documents for a jurisdiction do not address the point, say plainly that the loaded documents for that jurisdiction do not specify it. Do not fill the gap from another jurisdiction, from statewide guidance, or from general knowledge.
+- Documents titled "Requirements matrix" are key values taken once from that city's full code, each with the sentence it came from. On those points they are complete: state the value exactly as given, and if an entry says the code does not specify something, say so even if no other passage mentions it.
 - Documents from the Utah Geological Survey are statewide guidance, not local law. Use them for context and label them as guidance.
 - When jurisdictions differ, show the difference directly; a compact table is welcome when comparing three or more items.
 - Wording: refer to each authority by its name (for example "Draper City") or as "the city" or "the local code". Use the word "jurisdiction" sparingly, at most once or twice in an answer.
@@ -68,7 +69,7 @@ def _source(n: int, p: Passage) -> dict:
     return {"n": n, "id": p.id, "file": _file_for(p.url), "jurisdiction": p.jurisdiction, "jurisdiction_name": p.jurisdiction_name,
             "layer": p.layer, "title": p.title, "label": p.label, "doc_title": p.doc_title,
             "section": p.section_path,
-            "pages": [p.page_start, p.page_end], "url": p.link, "text": p.text}
+            "pages": [p.page_start, p.page_end], "url": p.link, "text": p.text, "matrix": p.matrix}
 
 
 def _text(content) -> str:
@@ -88,7 +89,8 @@ def retrieve(mode: str, messages: list[dict], project: dict) -> tuple[Route | No
         return r, []
     state = project.get("state_guidance", []) if r.include_state else []
     by_j = search_scoped(r.question, r.queries, r.jurisdictions, state)
-    ordered = [p for j in r.jurisdictions + state for p in by_j.get(j, [])]
+    pinned = matrix.rows(r.jurisdictions, r.parameters)      # exact lookup, independent of search
+    ordered = [p for j in r.jurisdictions + state for p in pinned.get(j, []) + by_j.get(j, [])]
     return r, ordered
 
 

@@ -81,6 +81,7 @@ async def grade(question: str, gold: str, answer: str) -> dict:
 def retrieval_hit(sources: dict, passages) -> bool | None:
     if not sources:
         return None
+    passages = [p for p in passages if not p.matrix]      # search only: matrix cells are looked up, not found
     return all(any(p.jurisdiction == j and needle in p.text for p in passages)
                for j, needle in sources.items())
 
@@ -93,7 +94,8 @@ async def run_one(q: dict, mode: str, project: dict, sem: asyncio.Semaphore) -> 
     return {"id": q["id"], "kind": q["kind"], "mode": mode, "question": q["question"], "gold": q["gold"],
             "answer": out["answer"], "correct": bool(verdict.get("correct")),
             "contaminated": bool(verdict.get("contaminated")), "reason": verdict.get("reason", ""),
-            "retrieval_hit": hit, "passages": [f"{p.jurisdiction}: {p.section_path}" for p in out["passages"]],
+            "retrieval_hit": hit,
+            "passages": [f"{p.jurisdiction}: {'matrix: ' + p.matrix if p.matrix else p.section_path}" for p in out["passages"]],
             "tokens_in": out["tokens_in"], "tokens_out": out["tokens_out"], "seconds": out["seconds"]}
 
 
@@ -129,13 +131,18 @@ async def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--concurrency", type=int, default=3)
+    ap.add_argument("--modes", default=",".join(MODES), help="comma-separated subset of: " + ", ".join(MODES))
+    ap.add_argument("--only", default="", help="run a single question id")
     args = ap.parse_args()
     questions = yaml.safe_load((HERE / "questions.yaml").read_text())["questions"]
     if args.limit:
         questions = questions[:args.limit]
+    if args.only:
+        questions = [q for q in questions if q["id"] == args.only]
+    modes = [m for m in MODES if m in args.modes.split(",")]
     project = proj.load()
     sem = asyncio.Semaphore(args.concurrency)
-    rows = await asyncio.gather(*(run_one(q, m, project, sem) for q in questions for m in MODES))
+    rows = await asyncio.gather(*(run_one(q, m, project, sem) for q in questions for m in modes))
     out = HERE / "results"
     out.mkdir(exist_ok=True)
     (out / "results.json").write_text(json.dumps(rows, indent=2))
