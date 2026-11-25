@@ -63,18 +63,24 @@ class TaskRequest(BaseModel):
 @app.post("/v1/task", dependencies=[Depends(require_key)])
 async def task(req: TaskRequest):
     """Small background jobs from the chat UI (e.g. naming a chat). No retrieval."""
-    if db.tokens_used_today() >= config.DAILY_TOKEN_LIMIT:
-        return {"text": ""}
     msgs = [{"role": m["role"], "content": _text(m["content"])[:6000]} for m in req.messages[-6:]
             if m.get("role") in ("user", "assistant") and _text(m["content"]).strip()]
     while msgs and msgs[0]["role"] != "user":
         msgs.pop(0)
     if not msgs:
         return {"text": ""}
-    resp = await bedrock.claude_async().messages.create(
-        model=config.ROUTER_MODEL, max_tokens=1000, messages=msgs)
-    db.record_usage(resp.usage.input_tokens, resp.usage.output_tokens)
-    return {"text": "".join(b.text for b in resp.content if b.type == "text")}
+    estimate = sum(len(m["content"]) for m in msgs) // 3 + 1000
+    if not db.reserve_tokens(estimate, config.DAILY_TOKEN_LIMIT):
+        return {"text": ""}
+    used_in, used_out, text = estimate, 0, ""     # a failed call keeps its reservation
+    try:
+        resp = await bedrock.claude_async().messages.create(
+            model=config.ROUTER_MODEL, max_tokens=1000, messages=msgs)
+        used_in, used_out = resp.usage.input_tokens, resp.usage.output_tokens
+        text = "".join(b.text for b in resp.content if b.type == "text")
+    finally:
+        db.settle_usage(estimate, used_in, used_out)
+    return {"text": text}
 
 
 @app.post("/v1/chat", dependencies=[Depends(require_key)])

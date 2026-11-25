@@ -149,6 +149,8 @@ async def answer(mode: str, model_key: str, messages: list[dict],
             yield {"type": "delta", "text": "\n\n_(Answer cut off at the length limit.)_"}
     except Exception as exc:                    # surface a readable error in the chat
         yield {"type": "error", "text": f"The model call failed: {type(exc).__name__}: {str(exc)[:300]}"}
+        # Real usage is unknown after a failure, so the reservation stays counted in full.
+        usage = {"input_tokens": estimate, "output_tokens": 0}
 
     latency = int((time.monotonic() - started) * 1000)
     await asyncio.to_thread(db.settle_usage, estimate, usage["input_tokens"], usage["output_tokens"])

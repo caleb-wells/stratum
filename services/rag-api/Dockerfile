@@ -9,9 +9,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY corpus /srv/corpus
 COPY services/openwebui /srv/services/openwebui
+COPY eval/questions.yaml eval/run.py /srv/eval/
 COPY services/rag-api/app ./app
 
-RUN useradd --system --uid 10001 app && chown -R app /srv/corpus
+RUN useradd --system --uid 10001 app && mkdir -p /srv/eval/results && chown -R app /srv/corpus /srv/eval
 USER app
 
 EXPOSE 8000

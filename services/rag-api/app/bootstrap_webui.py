@@ -4,6 +4,10 @@ Creates the admin account (the first account on a fresh install), installs and
 enables the Pipe function, and creates one ordinary account for the guest.
 Self-registration stays disabled throughout.
 
+Run this BEFORE the site is reachable from the internet (the deploy script starts the
+HTTPS proxy only after this succeeds): on a fresh install the first account to register
+becomes the admin, so that first registration must be ours.
+
     python -m app.bootstrap_webui
 Environment: WEBUI_INTERNAL_URL, ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_NAME,
              DEMO_EMAIL, DEMO_PASSWORD, DEMO_NAME (the DEMO_* ones are optional)
@@ -48,8 +52,13 @@ def main() -> None:
         r = requests.post(f"{BASE}/api/v1/auths/signup", timeout=30, json={
             "name": os.getenv("ADMIN_NAME", "Admin"), "email": admin_email, "password": admin_password})
         if not r.ok:
-            sys.exit(f"could not create the admin account: {r.status_code} {r.text[:200]}")
+            sys.exit("could not create the admin account. If accounts already exist, someone else "
+                     f"registered first: wipe the frontend's data volume and start again. "
+                     f"({r.status_code} {r.text[:200]})")
         token = r.json()["token"]
+        if r.json().get("role") != "admin":
+            sys.exit("the account was created but is NOT the admin: another account already existed. "
+                     "Wipe the frontend's data volume and start again before exposing the site.")
         print("admin account created")
     auth = {"Authorization": f"Bearer {token}"}
 

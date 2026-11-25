@@ -5,7 +5,6 @@ infra
 node_modules
 **/__pycache__
 **/*.pyc
-eval/results
 docs
 *.md
 .env
