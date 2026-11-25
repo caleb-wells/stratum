@@ -139,7 +139,7 @@ export class StratumStack extends cdk.Stack {
       securityGroup: sg,
       role,
       userData,
-      requireImdsv2: true,
+      httpTokens: ec2.HttpTokens.REQUIRED,
       // 1 = only the host itself can reach instance credentials; containers cannot. The host
       // passes short-lived credentials to the retrieval container alone (see deploy/server-setup.sh).
       httpPutResponseHopLimit: 1,
