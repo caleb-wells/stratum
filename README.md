@@ -71,11 +71,36 @@ answer that says so is correct.
 
 ## Results
 
-See [`eval/results/results.md`](eval/results/results.md) once the evaluation has been run.
 The set is 19 questions written from the verified source text: single-regulation facts,
 cross-regulation comparisons, "trap" questions where the right answer is "not specified
 here", and one report-drafting task. Each answer is graded for correctness and for
-wrong-regulation errors, and retrieval is checked separately.
+wrong-regulation errors, and retrieval is checked separately. All three setups use Claude
+Opus 5.5; run on 2026-11-25.
+
+| Setup | Correct | Wrong-regulation errors | Retrieved the right section |
+|---|---|---|---|
+| No retrieval | 21% (4/19) | 37% (7/19) | n/a |
+| Naive RAG (one pooled search) | 68% (13/19) | 26% (5/19) | 69% (11/16) |
+| Stratum (one search per regulation) | 95% (18/19) | 0% (0/19) | 94% (15/16) |
+
+Correct answers by question type:
+
+| Setup | Single | Compare | Silent | Draft |
+|---|---|---|---|---|
+| No retrieval | 2/10 | 0/4 | 2/4 | 0/1 |
+| Naive RAG | 10/10 | 1/4 | 2/4 | 0/1 |
+| Stratum | 10/10 | 4/4 | 4/4 | 0/1 |
+
+Naive retrieval handles single facts and falls apart on comparisons and traps, which is where
+similar clauses from different codes get mixed. Stratum's one miss is the report-drafting
+task: the search did not return Draper's fault-setback section, so the draft said the
+documents were silent on it. It did not borrow another city's value. Stratum sends about 50%
+more input tokens per question than naive retrieval (14,200 against 9,200).
+
+The full table is in [`eval/results/results.md`](eval/results/results.md) and every answer
+with its grade is in [`eval/results/results.json`](eval/results/results.json). Reproduce with
+`python /srv/eval/run.py` inside the `rag-api` container. One run, one grader model, 19
+questions: treat the numbers as a direction, not a benchmark.
 
 ## What is in the corpus
 

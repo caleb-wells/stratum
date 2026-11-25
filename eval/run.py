@@ -31,7 +31,7 @@ from app.generate import build_request, retrieve       # noqa: E402
 HERE = Path(__file__).resolve().parent
 MODES = ["none", "naive", "scoped"]
 LABELS = {"none": "No retrieval", "naive": "Naive RAG (one pooled search)",
-          "scoped": "Jurisdiction-scoped RAG"}
+          "scoped": "Stratum (one search per regulation)"}
 
 JUDGE = """You are grading an assistant's answer about geotechnical requirements for a project whose three sites fall under different jurisdictions: Site A = Draper City, Site B = Fruit Heights City, Site C = Ogden Valley.
 
@@ -104,7 +104,7 @@ def pct(rows: list[dict], key: str) -> str:
 
 def report(rows: list[dict]) -> str:
     kinds = ["single", "compare", "silent", "draft"]
-    lines = ["| Setup | Correct | Wrong-jurisdiction errors | Retrieved the right section | Avg input tokens |",
+    lines = ["| Setup | Correct | Wrong-regulation errors | Retrieved the right section | Avg input tokens |",
              "|---|---|---|---|---|"]
     for m in MODES:
         mine = [r for r in rows if r["mode"] == m]
@@ -120,7 +120,7 @@ def report(rows: list[dict]) -> str:
                 pct([r for r in mine if r["kind"] == k], "correct") for k in kinds) + " |")
     misses = [r for r in rows if r["mode"] == "scoped" and (not r["correct"] or r["contaminated"])]
     if misses:
-        lines += ["", "Misses by the jurisdiction-scoped setup:", ""]
+        lines += ["", "Misses by Stratum:", ""]
         lines += [f"- `{r['id']}`: {r['reason']}" for r in misses]
     return "\n".join(lines) + "\n"
 
