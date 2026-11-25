@@ -1,9 +1,5 @@
 # Stratum
 
-A working answer to one problem: an LLM that drafts geotechnical reports gets confused when
-one project spans several jurisdictions. It blends their rules, or applies one city's
-requirement to another city's site.
-
 Stratum keeps each jurisdiction's regulations in its own layer, searches each layer
 separately, and ties every claim in the answer to the exact source text.
 
