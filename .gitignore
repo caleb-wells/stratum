@@ -1,0 +1,13 @@
+.playwright-mcp/
+node_modules/
+cdk.out/
+__pycache__/
+*.pyc
+.venv/
+.env
+.env.*
+!.env.example
+corpus/raw/
+corpus/parsed/
+*.log
+.DS_Store

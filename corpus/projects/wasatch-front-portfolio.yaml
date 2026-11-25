@@ -1,0 +1,34 @@
+# A FICTIONAL sample project used to demonstrate jurisdiction-scoped retrieval.
+# The sites and client are invented. The regulations they are checked against are real.
+id: wasatch-front-portfolio
+name: Wasatch Front Hillside Portfolio (sample project)
+client: Example Development Group (fictional)
+summary: >
+  One client, three hillside sites along the Wasatch Front. The geotechnical
+  firm is preparing one geologic-hazards and geotechnical report per site, plus
+  a combined requirements summary for the client. Each site falls under a
+  different local jurisdiction, so the investigation and report requirements
+  differ site by site.
+sites:
+  - id: A
+    name: Site A - South Mountain Residences
+    jurisdiction: draper
+    description: >
+      12-lot single-family subdivision on a west-facing slope near the mapped
+      Wasatch fault zone. Natural slopes up to 2.5H:1V. Cut-and-fill grading
+      and two retaining walls planned.
+  - id: B
+    name: Site B - Bair Canyon Townhomes
+    jurisdiction: fruit_heights
+    description: >
+      24-unit townhome development at the mouth of a canyon on an alluvial
+      fan. A mapped trace of the Wasatch fault crosses the east edge of the
+      parcel. Shallow groundwater in the lower third of the site.
+  - id: C
+    name: Site C - North Fork Lodge
+    jurisdiction: ogden_valley
+    description: >
+      Two-story commercial lodge with guest occupancy on a bench above a
+      reservoir. A suspected fault scarp crosses the northern part of the
+      property. Slopes of 25 to 35 percent behind the building pad.
+state_guidance: [utah_ugs]

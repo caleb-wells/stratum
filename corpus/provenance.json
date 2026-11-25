@@ -1,0 +1,35 @@
+{
+  "checked": "2026-11-24",
+  "documents": {
+    "draper-geotech-standards": {
+      "url": "https://www.draperutah.gov/media/ysgcvslr/geotechnical-engineering-standards-with-append.pdf",
+      "file": "draper-geotech-standards.pdf",
+      "sha256": "ce7657cc0b11bed155b0970bd5913b6fe65851fce8d4094939f720c7ddf2a9dc",
+      "bytes": 936242
+    },
+    "fruit-heights-sleds": {
+      "url": "https://www.fruitheights.gov/DocumentCenter/View/1592",
+      "file": "fh-1592.pdf",
+      "sha256": "92ae42ae99139a103f619a46e62df2bda68fb934129767ea44d9bc14bfc53da1",
+      "bytes": 213490
+    },
+    "fruit-heights-sleds-appendices": {
+      "url": "https://www.fruitheights.gov/DocumentCenter/View/1591",
+      "file": "fruit-heights-sleds-app-b.pdf",
+      "sha256": "222e0460c6753b3e73f5f43b1f8970a07cc00e8f949583af97cfaa48129bb115",
+      "bytes": 434448
+    },
+    "ogden-valley-108-22": {
+      "url": "https://ogdenvalley.gov/wp-content/uploads/2026/05/Chapter-108-22-Natural-Hazard-Areas.pdf",
+      "file": "ogden-valley-108-22.pdf",
+      "sha256": "6533f98e4a0880fd2635008008e597e547ac5103ae37bf137f70910545b3540b",
+      "bytes": 247646
+    },
+    "ugs-circular-128": {
+      "url": "https://ugspub.nr.utah.gov/publications/circular/c-128.pdf",
+      "file": "ugs-circular-128.pdf",
+      "sha256": "02cde79e4d91f4768a2eb77426448befe4d0fd9597c351bda45a1aae3a4d7522",
+      "bytes": 12841735
+    }
+  }
+}

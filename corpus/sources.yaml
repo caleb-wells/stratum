@@ -1,0 +1,94 @@
+# Every document in the corpus. Nothing is ingested that is not listed here.
+# `layer: local` = adopted local requirement; `layer: state` = statewide guidance (not local law).
+retrieved: "2026-11-24"
+
+jurisdictions:
+  draper:
+    name: Draper City
+    county: Salt Lake County
+    layer: local
+  fruit_heights:
+    name: Fruit Heights City
+    county: Davis County
+    layer: local
+  ogden_valley:
+    name: Ogden Valley
+    county: Weber County
+    layer: local
+  utah_ugs:
+    name: Utah Geological Survey (statewide guidance)
+    county: null
+    layer: state
+
+documents:
+  - id: draper-geotech-standards
+    jurisdiction: draper
+    title: Draper City Geotechnical Engineering Standards
+    doc_date: "2025-12-16"
+    url: https://www.draperutah.gov/media/ysgcvslr/geotechnical-engineering-standards-with-append.pdf
+    file: draper-geotech-standards.pdf
+    parser: numbered
+    part_from_header: '^Appendix ([A-E])\s*$'
+    part_titles:
+      A: "Appendix A: Minimum Standards for Fault Activity Investigations"
+      B: "Appendix B: Minimum Standards for Slope Stability Analyses"
+      C: "Appendix C: Minimum Standards for Liquefaction Investigations"
+      D: "Appendix D: Minimum Standards for Debris Flow Investigations"
+      E: "Appendix E: Minimum Standards for Rockfall Hazard Investigations"
+    strip:
+      - '^Draper City\s*$'
+      - '^Geotechnical Engineering Standards\s*$'
+      - '^\d{1,2}-\d{1,2}-\d{2}\s*$'
+      - '^Page \d+ of \d+\s*$'
+      - '^Appendix [A-E]\s*$'
+      - '^Minimum Standards for .{5,60}(Investigations|Analyses)\s*$'
+
+  - id: fruit-heights-sleds
+    jurisdiction: fruit_heights
+    title: "Fruit Heights City Code Chapter 10.10A: Sensitive Lands Evaluation & Development Standards (SLEDS)"
+    doc_date: null
+    url: https://www.fruitheights.gov/DocumentCenter/View/1592
+    file: fh-1592.pdf
+    parser: numbered
+    heading_regex: '^(10\.10A\.\d{3})\s+(.{3,100})$'
+    strip:
+      - '^Page \d+ of \d+\s*$'
+      - '^SENSITIVE LANDS EVALUATION & DEVELOPMENT STANDARDS \(SLEDS\)\s*$'
+
+  - id: fruit-heights-sleds-appendices
+    jurisdiction: fruit_heights
+    title: "Fruit Heights City SLEDS (Chapter 10.10A) Appendices: Minimum Standards for Hazard Studies"
+    doc_date: null
+    url: https://www.fruitheights.gov/DocumentCenter/View/1591
+    file: fruit-heights-sleds-app-b.pdf
+    parser: numbered
+    part_from_header: '^Appendix ([A-I]) [-–] .*$'
+    strip:
+      - '^Appendix [A-I] [-–] .{3,60}$'
+      - '^APPENDIX [A-I]\s*$'
+      - '^Page \d+ of \d+\s*$'
+
+  - id: ogden-valley-108-22
+    jurisdiction: ogden_valley
+    title: "Ogden Valley Code Chapter 108-22: Natural Hazard Areas"
+    doc_date: null
+    url: https://ogdenvalley.gov/wp-content/uploads/2026/05/Chapter-108-22-Natural-Hazard-Areas.pdf
+    file: ogden-valley-108-22.pdf
+    parser: numbered
+    heading_regex: '^(Sec 108-22-\d+)\s+(.{3,100})$'
+    strip: []
+
+  - id: ugs-circular-128
+    jurisdiction: utah_ugs
+    title: "UGS Circular 128: Guidelines for Investigating Geologic Hazards and Preparing Engineering-Geology Reports, with a Suggested Approach to Geologic-Hazard Ordinances in Utah (2nd ed.)"
+    doc_date: "2020"
+    url: https://ugspub.nr.utah.gov/publications/circular/c-128.pdf
+    file: ugs-circular-128.pdf
+    parser: toc
+    first_page: 29          # 1-based PDF page where Chapter 2 starts; Chapter 1 is background
+    skip_sections: ['REFERENCES', 'ACKNOWLEDGMENTS']
+    strip:
+      - '^\d{1,3}\s*$'
+      - '^Utah Geological Survey\s*$'
+      - '^Chapter \d+ \| .*$'
+      - '^Guidelines for investigating geologic hazards and preparing engineering-geology reports.*$'

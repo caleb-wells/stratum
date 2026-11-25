@@ -1,0 +1,9 @@
+anthropic[bedrock]>=2.14,<3
+boto3>=1.40
+fastapi>=0.115
+uvicorn[standard]>=0.32
+psycopg[binary,pool]>=3.2
+pgvector>=0.3.6
+pymupdf>=1.25
+pyyaml>=6
+requests>=2.32
