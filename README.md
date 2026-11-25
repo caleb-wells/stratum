@@ -24,12 +24,12 @@ Three real differences in the loaded documents show what is at stake:
 
 ## How Stratum handles it
 
-1. **Jurisdiction is data, not prose.** Every passage is stored with its jurisdiction, document,
+1. **The regulation is data, not prose.** Every passage is stored with its regulation, document,
    section path, page and source link. The same header is embedded with the text.
-2. **A project maps sites to jurisdictions.** A small routing step (Claude Haiku) reads the
-   question and decides which jurisdictions it concerns: "Site B" resolves to Fruit Heights;
+2. **A project maps sites to regulations.** A small routing step (Claude Haiku) reads the
+   question and decides which regulations it concerns: "Site B" resolves to Fruit Heights;
    "compare the sites" resolves to all three.
-3. **One search per jurisdiction, behind a hard filter.** A Draper passage cannot be returned
+3. **One search per regulation, behind a hard filter.** A Draper passage cannot be returned
    as evidence for Fruit Heights, because the Fruit Heights search never sees it. Statewide
    guidance (Utah Geological Survey) is searched separately and labelled as guidance, not law.
 4. **Hybrid search, then re-ranking.** Keyword search catches exact things ("1.5", "Section
@@ -41,7 +41,7 @@ Three real differences in the loaded documents show what is at stake:
    (values landed on the wrong rows). Cells are read individually and written as
    self-describing rows.
 7. **Quote-level citations.** Passages go to Claude as separate cited documents. Each claim in
-   the answer links to the passage it came from. When a jurisdiction's documents are silent,
+   the answer links to the passage it came from. When a regulation is silent,
    the answer says so instead of borrowing from a neighbour.
 
 ```
@@ -65,17 +65,17 @@ The picker at the top left has three setups running the same Claude model:
 - **Baseline · Naive RAG** - one pooled search on the raw question, generic prompt.
 - **Baseline · No retrieval** - the model's memory only.
 
-Ask all three: *"What minimum static factor of safety does the jurisdiction for Site C
+Ask all three: *"What minimum static factor of safety do the regulations for Site C
 require for slope stability?"* The loaded Ogden Valley code does not give one. Only an
 answer that says so is correct.
 
 ## Results
 
 See [`eval/results/results.md`](eval/results/results.md) once the evaluation has been run.
-The set is 19 questions written from the verified source text: single-jurisdiction facts,
-cross-jurisdiction comparisons, "trap" questions where the right answer is "not specified
+The set is 19 questions written from the verified source text: single-regulation facts,
+cross-regulation comparisons, "trap" questions where the right answer is "not specified
 here", and one report-drafting task. Each answer is graded for correctness and for
-wrong-jurisdiction errors, and retrieval is checked separately.
+wrong-regulation errors, and retrieval is checked separately.
 
 ## What is in the corpus
 
@@ -92,12 +92,12 @@ Sources and download checks are recorded in [`corpus/sources.yaml`](corpus/sourc
 ## What I would do next
 
 - **A requirements matrix for the numbers that must never be wrong.** Extract the critical
-  parameters per jurisdiction once (factors of safety, setback method, report validity), have
+  parameters per regulation once (factors of safety, setback method, report validity), have
   an engineer confirm them, and look them up exactly at drafting time. Retrieval then covers
   the long tail; the matrix covers the values a report cannot get wrong.
-- **Resolve jurisdiction from the map.** Where projects are already placed on a map, a
-  point-in-polygon lookup against city and county boundaries would set the jurisdiction
-  automatically, including overlapping layers (city, county, state).
+- **Resolve the governing regulations from the map.** Where projects are already placed on a map, a
+  point-in-polygon lookup against city and county boundaries would pick the regulations
+  that apply automatically, including overlapping layers (city, county, state).
 - **Track amendments.** Re-download sources on a schedule, diff by section, and flag reports
   drafted against superseded text.
 - **Per-firm overlays.** A firm's own standards and past reviewer comments become another
