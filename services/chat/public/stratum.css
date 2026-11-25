@@ -367,3 +367,18 @@ html.dark body { background-color: #0c0d10; }
 /* profile picker: white label and arrow */
 html.dark #chat-profiles, html.dark #chat-profiles span { color: #ffffff !important; }
 html.dark #chat-profiles svg { color: #ffffff !important; opacity: 1 !important; }
+
+/* Top bar as a pane of glass. The bar overlaps the top of the conversation (negative margin)
+   so messages scroll underneath it and blur, instead of being cut off at a hard edge. */
+html.dark #header {
+  z-index: 30;
+  margin-bottom: -60px;
+  background: linear-gradient(180deg, rgba(16, 17, 20, 0.72), rgba(16, 17, 20, 0.5)) !important;
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--st-edge);
+}
+/* keep the first message, and anything else in the content area, clear of the bar */
+html.dark #header + div .flex.flex-col.flex-grow.overflow-y-auto:not(.relative) { padding-top: 60px; scroll-padding-top: 60px; }
+/* the source panel beside the chat starts below the bar */
+html.dark #header + div aside:has(#side-view-title) { margin-top: 68px; }
