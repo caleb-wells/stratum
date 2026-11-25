@@ -33,7 +33,7 @@ layout = "wide"
 default_sidebar_state = "open"
 confirm_new_chat = false
 cot = "full"
-custom_css = "/public/stratum.css?v=9"
+custom_css = "/public/stratum.css?v=10"
 custom_js = "/public/stratum.js?v=4"
 alert_style = "modern"
 login_page_image = "/public/login.svg"

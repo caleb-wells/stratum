@@ -37,8 +37,8 @@
       "--card-foreground": "220 5% 96%",
       "--popover": "228 5% 10%",
       "--popover-foreground": "220 5% 96%",
-      "--primary": "190 77% 61%",
-      "--primary-foreground": "222 5% 8%",
+      "--primary": "222 77% 57%",
+      "--primary-foreground": "0 0% 100%",
       "--secondary": "228 5% 14%",
       "--secondary-foreground": "220 5% 96%",
       "--muted": "228 5% 16%",
@@ -49,15 +49,15 @@
       "--destructive-foreground": "0 0% 100%",
       "--border": "228 5% 23%",
       "--input": "228 5% 23%",
-      "--ring": "190 77% 61%",
+      "--ring": "222 77% 57%",
       "--sidebar-background": "228 5% 7%",
       "--sidebar-foreground": "220 5% 92%",
-      "--sidebar-primary": "190 77% 61%",
-      "--sidebar-primary-foreground": "222 5% 8%",
+      "--sidebar-primary": "222 77% 57%",
+      "--sidebar-primary-foreground": "0 0% 100%",
       "--sidebar-accent": "228 5% 16%",
       "--sidebar-accent-foreground": "220 5% 96%",
       "--sidebar-border": "228 5% 19%",
-      "--sidebar-ring": "190 77% 61%"
+      "--sidebar-ring": "222 77% 57%"
     }
   }
 }

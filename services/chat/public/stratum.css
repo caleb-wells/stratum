@@ -6,7 +6,7 @@
 :root {
   --st-night: #08090b;
   --st-deep: #0c0d10;
-  --st-cyan: #4fd1e8;
+  --st-cyan: #3d6fe6;
   --st-azure: #5b8def;
   --st-violet: #9b7bff;
   --st-edge: rgba(228, 230, 236, 0.13);
@@ -47,7 +47,7 @@ html.dark body::before {
   width: 46vmax; height: 46vmax;
   left: 48%; top: -16%;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, rgba(79, 209, 232, 0.05), rgba(255, 255, 255, 0.02) 45%, transparent 70%);
+  background: radial-gradient(circle at 35% 35%, rgba(61, 111, 230, 0.05), rgba(255, 255, 255, 0.02) 45%, transparent 70%);
   filter: blur(34px);
   animation: st-float 24s ease-in-out infinite;
   pointer-events: none;
@@ -127,14 +127,14 @@ html.dark #message-composer {
   transition: border-color 200ms ease;
 }
 html.dark #message-composer:focus-within {
-  border-color: rgba(79, 209, 232, 0.6);
+  border-color: rgba(61, 111, 230, 0.6);
   animation: none;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 0 0 4px rgba(79, 209, 232, 0.13);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 0 0 4px rgba(61, 111, 230, 0.13);
 }
 html.dark #chat-input { background: transparent !important; border: 0 !important; box-shadow: none !important; }
 html.dark #chat-submit {
   background: var(--st-cyan) !important;
-  color: #061022 !important;
+  color: #ffffff !important;
   box-shadow: none;
   transition: transform 160ms ease, box-shadow 160ms ease;
 }
@@ -179,9 +179,9 @@ html.dark #root [id^="step-"] h3 { font-size: 1.05rem; }
 
 /* source chips */
 html.dark .element-link {
-  background: rgba(79, 209, 232, 0.12) !important;
-  color: #bfeef7 !important;
-  box-shadow: inset 0 0 0 1px rgba(79, 209, 232, 0.35);
+  background: rgba(61, 111, 230, 0.12) !important;
+  color: #cfdcff !important;
+  box-shadow: inset 0 0 0 1px rgba(61, 111, 230, 0.35);
   padding: 0.1rem 0.5rem;
   letter-spacing: 0.01em;
   text-transform: none;
@@ -189,7 +189,7 @@ html.dark .element-link {
 }
 html.dark .element-link:hover {
   background: var(--st-cyan) !important;
-  color: #061022 !important;
+  color: #ffffff !important;
   transform: translateY(-1px);
   box-shadow: none;
 }
@@ -205,7 +205,7 @@ html.dark #chat-profiles {
 }
 html.dark #root button[id^="starter-"]:hover {
   transform: translateY(-3px);
-  border-color: rgba(79, 209, 232, 0.5) !important;
+  border-color: rgba(61, 111, 230, 0.5) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
@@ -277,7 +277,7 @@ html.dark .grid.lg\:grid-cols-2 form {
 html.dark .grid.lg\:grid-cols-2 form h1 {
   font-size: 1.75rem;
   letter-spacing: -0.02em;
-  background: linear-gradient(100deg, #ffffff 55%, var(--st-cyan));
+  background: linear-gradient(100deg, #ffffff 55%, #a9c0ff);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -291,7 +291,7 @@ html.dark .grid.lg\:grid-cols-2 form input {
 }
 html.dark .grid.lg\:grid-cols-2 form input:focus {
   border-color: var(--st-cyan) !important;
-  box-shadow: 0 0 0 4px rgba(79, 209, 232, 0.16) !important;
+  box-shadow: 0 0 0 4px rgba(61, 111, 230, 0.16) !important;
   outline: none;
 }
 html.dark .grid.lg\:grid-cols-2 form input:-webkit-autofill {
@@ -302,7 +302,7 @@ html.dark .grid.lg\:grid-cols-2 form button[type="submit"] {
   height: 2.9rem;
   border-radius: 0.8rem;
   font-weight: 600;
-  color: #061022 !important;
+  color: #ffffff !important;
   background:
     linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.55) 48%, transparent 62%) -120% 0 / 220% 100% no-repeat,
     linear-gradient(100deg, var(--st-cyan), var(--st-cyan)) !important;
@@ -363,3 +363,7 @@ html.dark body { background-color: #0c0d10; }
   background: url("/public/mark.svg") center / cover no-repeat;
 }
 #root .ai-message > span > span.rounded-full:not(:has(img)) > span { visibility: hidden; }
+
+/* profile picker: white label and arrow */
+html.dark #chat-profiles, html.dark #chat-profiles span { color: #ffffff !important; }
+html.dark #chat-profiles svg { color: #ffffff !important; opacity: 1 !important; }
