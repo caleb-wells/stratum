@@ -138,7 +138,9 @@ export class StratumStack extends cdk.Stack {
       role,
       userData,
       requireImdsv2: true,
-      httpPutResponseHopLimit: 2,        // containers reach the instance role through one extra hop
+      // 2 lets a container use the instance role. deploy/server-setup.sh firewalls the metadata
+      // address so that only the retrieval container can, and refuses to go live otherwise.
+      httpPutResponseHopLimit: 2,
       userDataCausesReplacement: false,
       blockDevices: [{
         deviceName: "/dev/xvda",

@@ -33,6 +33,9 @@ services:
       INTERNAL_API_KEY: ${INTERNAL_API_KEY:?set INTERNAL_API_KEY}
       AWS_REGION: ${AWS_REGION:-us-west-2}
       DAILY_TOKEN_LIMIT: ${DAILY_TOKEN_LIMIT:-3000000}
+    networks:
+      default:
+        ipv4_address: 172.28.0.10     # fixed, so the server firewall can allow only this container to reach AWS credentials
 
   open-webui:
     image: ${WEBUI_IMAGE:-geo-rag-webui:local}
@@ -116,6 +119,12 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
 
 volumes:
   pgdata:
