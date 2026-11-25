@@ -85,6 +85,7 @@ documents:
     url: https://ugspub.nr.utah.gov/publications/circular/c-128.pdf
     file: ugs-circular-128.pdf
     parser: toc
+    columns: 2
     first_page: 29          # 1-based PDF page where Chapter 2 starts; Chapter 1 is background
     skip_sections: ['REFERENCES', 'ACKNOWLEDGMENTS']
     strip:

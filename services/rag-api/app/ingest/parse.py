@@ -58,14 +58,54 @@ def load_manifest(root: Path) -> dict:
     return yaml.safe_load((root / "corpus" / "sources.yaml").read_text())
 
 
-def _page_lines(page) -> list[str]:
-    blocks = page.get_text("blocks", sort=True)
-    lines: list[str] = []
-    for b in blocks:
-        if b[6] != 0:  # image block
+def _table_rows(page, table) -> list[str]:
+    """Render a table as self-describing rows ("Header: value; Header: value").
+
+    Cells are read one at a time from their own rectangle, which keeps numbers
+    intact and aligned with the right row; plain text extraction scrambles them.
+    """
+    grid = []
+    for row in table.rows:
+        cells = []
+        for cell in row.cells:
+            text = page.get_text("text", clip=pymupdf.Rect(cell) + (-1, -1, 1, 1)) if cell else ""
+            cells.append(re.sub(r"\s+", " ", text).strip())
+        grid.append(cells)
+    header, body = grid[0], grid[1:]
+    lines = ["Table:", ""]
+    for cells in body:
+        pairs = [f"{h}: {c}" if h else c for h, c in zip(header, cells) if c]
+        if pairs:
+            lines += ["- " + "; ".join(pairs), ""]
+    return lines
+
+
+def _page_lines(page, columns: int = 1) -> list[str]:
+    tables = [t for t in page.find_tables().tables if t.row_count >= 3 and t.col_count >= 2]
+    boxes = [pymupdf.Rect(t.bbox) for t in tables]
+    width, height = page.rect.width, page.rect.height
+
+    def order(x0: float, y0: float, x1: float) -> tuple:
+        if columns == 1:
+            return (0, y0, x0)
+        if x1 - x0 > 0.6 * width:                    # spans both columns
+            return (-1, y0, x0) if y0 < 0.25 * height else (2, y0, x0)
+        return (0 if x0 < 0.45 * width else 1, y0, x0)
+
+    items: list[tuple[tuple, list[str]]] = []
+    for b in page.get_text("blocks"):
+        if b[6] != 0:                                # image block
             continue
-        lines.extend(b[4].replace("­\n", "").replace("­", "").splitlines())
-        lines.append("")
+        centre = pymupdf.Point((b[0] + b[2]) / 2, (b[1] + b[3]) / 2)
+        if any(centre in box for box in boxes):       # table text is rendered separately
+            continue
+        text = b[4].replace("\u00ad\n", "").replace("\u00ad", "")
+        items.append((order(b[0], b[1], b[2]), text.splitlines() + [""]))
+    for t, box in zip(tables, boxes):
+        items.append((order(box.x0, box.y0, box.x1), [""] + _table_rows(page, t)))
+    lines: list[str] = []
+    for _, chunk in sorted(items, key=lambda i: i[0]):
+        lines.extend(chunk)
     return lines
 
 
@@ -204,7 +244,7 @@ def parse_toc(pdf: Path, doc: dict) -> list[Section]:
     skipping = False
     for pno in range(first, len(d) + 1):
         pending = list(by_page.get(pno, []))
-        raw = [_clean(l) for l in _page_lines(d[pno - 1])]
+        raw = [_clean(l) for l in _page_lines(d[pno - 1], doc.get("columns", 1))]
         i = 0
         while i < len(raw):
             l = raw[i]

@@ -1,0 +1,184 @@
+/* Stratum sign-in page.
+   The one expressive element is the boring log down the left edge: the artefact a
+   geotechnical engineer looks at every day. Everything else stays quiet.
+   Only the sign-in page is restyled; the chat interface is left as shipped. */
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@87.5..112,400..700&display=swap");
+
+#auth-page {
+  --ground: #15181b;
+  --ink: #ece7dd;
+  --ink-soft: #a9a59b;
+  --rule: #454b53;
+  --ochre: #d8b36a;
+  --ochre-deep: #b9944c;
+  --log-width: clamp(120px, 27vw, 360px);
+  font-family: "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink);
+}
+
+/* page ground, replacing the flat black layer */
+#auth-page > div.absolute.h-full {
+  background: var(--ground) !important;
+}
+
+/* the boring log */
+#auth-page::before {
+  content: "";
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--log-width);
+  background: var(--ground) url("/static/stratum-log.svg") right top / 360px 2400px no-repeat;
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.04);
+  z-index: 40;
+}
+
+/* keep the product mark clear of the log */
+#auth-page > div.fixed.top-0 {
+  left: auto;
+  right: 0;
+}
+
+#auth-container {
+  color: var(--ink) !important;
+  padding-left: var(--log-width);
+}
+#auth-container > div {
+  text-align: left;
+  padding-inline: clamp(1.5rem, 6vw, 6rem);
+}
+#auth-container > div > div {
+  align-items: flex-start;
+}
+#auth-login-card {
+  max-width: 27rem;
+  color: var(--ink) !important;
+}
+
+/* heading and the line beneath it */
+#auth-login-card form > div:first-child > div {
+  font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.5rem);
+  font-weight: 600;
+  font-stretch: 108%;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+#auth-login-card form > div:first-child::after {
+  content: "Geotechnical requirements for a multi-jurisdiction project, with each jurisdiction kept separate and every answer tied to its source.";
+  display: block;
+  margin-top: 0.9rem;
+  max-width: 34ch;
+  font-size: 0.975rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* fields: ruled lines, like the form a field log is written on */
+#auth-login-card form > div.flex.flex-col {
+  margin-top: 2.25rem;
+  gap: 1.35rem;
+}
+#auth-login-card form > div.flex.flex-col > div {
+  margin: 0;
+}
+#auth-login-card label:not(.sr-only) {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  margin-bottom: 0.15rem;
+}
+#auth-login-card input#email,
+#auth-login-card input#password {
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  padding: 0.45rem 0;
+  margin: 0;
+  color: var(--ink);
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0;
+  transition: border-color 120ms ease;
+}
+#auth-login-card input#email::placeholder,
+#auth-login-card input#password::placeholder {
+  color: #6b7078;
+}
+#auth-login-card input#email:focus,
+#auth-login-card input#password:focus {
+  border-bottom-color: var(--ochre);
+  box-shadow: 0 1px 0 0 var(--ochre);
+}
+/* browsers paint autofilled fields pale blue; keep them on the page ground instead */
+#auth-login-card input#email:-webkit-autofill,
+#auth-login-card input#password:-webkit-autofill,
+#auth-login-card .relative > input#password:-webkit-autofill,
+#auth-login-card .relative > input#password:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--ink);
+  box-shadow: 0 0 0 100px var(--ground) inset !important;
+  caret-color: var(--ink);
+}
+/* the password field and its show/hide button share one rule */
+#auth-login-card .relative {
+  border-bottom: 1px solid var(--rule);
+  transition: border-color 120ms ease;
+}
+#auth-login-card .relative:focus-within {
+  border-bottom-color: var(--ochre);
+  box-shadow: 0 1px 0 0 var(--ochre);
+}
+#auth-login-card .relative > input#password,
+#auth-login-card .relative > input#password:focus {
+  border-bottom: 0;
+  box-shadow: none;
+}
+#auth-login-card .relative > button[type="button"] {
+  color: var(--ink-soft);
+  padding-right: 0.25rem;
+}
+#auth-login-card .relative > button[type="button"]:hover {
+  color: var(--ink);
+}
+
+/* the one action */
+#auth-login-card form > div.mt-5 {
+  margin-top: 2.25rem;
+}
+#auth-login-card button[type="submit"] {
+  background: var(--ochre) !important;
+  color: #1b1710 !important;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 0.375rem;
+  padding: 0.8rem 1.25rem;
+  transition: background-color 120ms ease, transform 80ms ease;
+}
+#auth-login-card button[type="submit"]:hover {
+  background: #e4c382 !important;
+}
+#auth-login-card button[type="submit"]:active {
+  background: var(--ochre-deep) !important;
+  transform: translateY(1px);
+}
+#auth-login-card button:focus-visible {
+  outline: 2px solid var(--ochre);
+  outline-offset: 3px;
+}
+
+/* phones: the log narrows to an edge strip and the form takes the width */
+@media (max-width: 640px) {
+  #auth-page {
+    --log-width: 44px;
+  }
+  #auth-page::before {
+    background-position: -308px top;
+  }
+  #auth-container > div {
+    padding-inline: 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #auth-login-card input,
+  #auth-login-card button {
+    transition: none;
+  }
+}

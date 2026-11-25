@@ -66,9 +66,9 @@ def retrieve(mode: str, messages: list[dict], project: dict) -> tuple[Route | No
     if not r.needs_retrieval:
         return r, []
     if mode == "naive":
-        return r, search_pooled(r.queries)
+        return r, search_pooled(r.question, r.queries)
     state = project.get("state_guidance", []) if r.include_state else []
-    by_j = search_scoped(r.queries, r.jurisdictions, state)
+    by_j = search_scoped(r.question, r.queries, r.jurisdictions, state)
     ordered = [p for j in r.jurisdictions + state for p in by_j.get(j, [])]
     return r, ordered
 
@@ -76,9 +76,12 @@ def retrieve(mode: str, messages: list[dict], project: dict) -> tuple[Route | No
 def build_request(mode: str, model_key: str, messages: list[dict], project: dict,
                   passages: list[Passage]) -> dict:
     system = (SYSTEM_NONE if mode == "none" else SYSTEM_GROUNDED).format(project=proj.describe(project))
-    history = [{"role": m["role"], "content": _text(m["content"])} for m in messages[:-1]
+    history = [{"role": m["role"], "content": _text(m["content"])[:config.MAX_MESSAGE_CHARS]}
+               for m in messages[:-1][-config.MAX_HISTORY_MESSAGES:]
                if m["role"] in ("user", "assistant") and _text(m["content"]).strip()]
-    question = _text(messages[-1]["content"])
+    while history and history[0]["role"] != "user":      # a trimmed history must start with the user
+        history.pop(0)
+    question = _text(messages[-1]["content"])[:config.MAX_MESSAGE_CHARS]
     content: list[dict] = [_document(p) for p in passages]
     content.append({"type": "text", "text": question})
     return {
@@ -96,7 +99,12 @@ async def answer(mode: str, model_key: str, messages: list[dict],
     project = proj.load(project_id)
     question = _text(messages[-1]["content"])
 
-    if db.tokens_used_today() >= config.DAILY_TOKEN_LIMIT:
+    # Refuse before spending anything if this request could not fit in what is left today.
+    recent = messages[-(config.MAX_HISTORY_MESSAGES + 1):]
+    estimate = (sum(min(len(_text(m["content"])), config.MAX_MESSAGE_CHARS) for m in recent) // 3
+                + config.MAX_OUTPUT_TOKENS
+                + (0 if mode == "none" else config.RETRIEVAL_TOKEN_ALLOWANCE))
+    if not db.reserve_tokens(estimate, config.DAILY_TOKEN_LIMIT):
         yield {"type": "delta", "text": LIMIT_MESSAGE}
         yield {"type": "done", "usage": {}, "limited": True}
         return
@@ -143,7 +151,7 @@ async def answer(mode: str, model_key: str, messages: list[dict],
         yield {"type": "error", "text": f"The model call failed: {type(exc).__name__}: {str(exc)[:300]}"}
 
     latency = int((time.monotonic() - started) * 1000)
-    await asyncio.to_thread(db.record_usage, usage["input_tokens"], usage["output_tokens"])
+    await asyncio.to_thread(db.settle_usage, estimate, usage["input_tokens"], usage["output_tokens"])
     await asyncio.to_thread(
         db.log_request, mode=mode, model=request["model"], question=question[:2000],
         route=r.dict() if r else None, chunk_ids=[p.id for p in passages],

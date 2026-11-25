@@ -94,26 +94,59 @@ def _rerank(query: str, candidates: list[Passage], top_n: int) -> list[Passage]:
     return out
 
 
-def _search_one(queries: list[str], embeddings: list[list[float]], jurisdiction: str | None,
-                top_n: int) -> list[Passage]:
+def _search_one(question: str, queries: list[str], embeddings: list[list[float]],
+                jurisdiction: str | None, top_n: int) -> list[Passage]:
+    """Gather candidates from every search query, then re-rank against the real question."""
     merged: dict[str, Passage] = {}
     for q, e in zip(queries, embeddings):
         for p in _hybrid(q, e, jurisdiction, config.CANDIDATES_PER_SEARCH):
-            if p.id not in merged or p.score > merged[p.id].score:
+            if p.id in merged:
+                merged[p.id].score += p.score          # found by several queries: stronger
+            else:
                 merged[p.id] = p
-    candidates = sorted(merged.values(), key=lambda p: p.score, reverse=True)[:config.CANDIDATES_PER_SEARCH]
-    return _rerank(" ".join(queries), candidates, top_n)
+    candidates = sorted(merged.values(), key=lambda p: p.score, reverse=True)[:config.RERANK_POOL]
+    return _expand_sections(_rerank(question, candidates, top_n))
 
 
-def search_scoped(queries: list[str], local: list[str], state: list[str]) -> dict[str, list[Passage]]:
+def _expand_sections(hits: list[Passage]) -> list[Passage]:
+    """If two or more hits are parts of one section, bring in that section's other parts.
+
+    A requirement is often split across siblings (a formula in 8.1.1, its table of
+    minimums in 8.1.3). When retrieval has clearly landed in a section, the
+    neighbours are cheap to add and are what a human reader would look at next.
+    """
+    parents: dict[tuple[str, str], int] = {}
+    for p in hits:
+        if " > " in p.section_path:
+            key = (p.doc_title, p.section_path.rsplit(" > ", 1)[0])
+            parents[key] = parents.get(key, 0) + 1
+    have = {p.id for p in hits}
+    extra: list[Passage] = []
+    for (doc_title, parent), n in sorted(parents.items(), key=lambda kv: -kv[1]):
+        room = config.SECTION_EXPANSION - len(extra)
+        if n < 2 or room <= 0 or parent.count(" > ") < 1:
+            continue
+        with db.conn() as c:
+            rows = c.execute(
+                f"SELECT {_COLS} FROM chunks WHERE doc_title = %s AND jurisdiction = %s "
+                "AND starts_with(section_path, %s) AND NOT (id = ANY(%s)) ORDER BY seq LIMIT %s",
+                (doc_title, hits[0].jurisdiction, parent, list(have), room)).fetchall()
+        for row in rows:
+            extra.append(Passage(**row))
+            have.add(row["id"])
+    return hits + extra
+
+
+def search_scoped(question: str, queries: list[str], local: list[str],
+                  state: list[str]) -> dict[str, list[Passage]]:
     """One isolated search per jurisdiction. Returns {jurisdiction: passages}."""
     embeddings = bedrock.embed_many(queries)
     scopes = [(j, config.TOP_K_LOCAL) for j in local] + [(j, config.TOP_K_STATE) for j in state]
     with ThreadPoolExecutor(max_workers=max(1, len(scopes))) as pool:
-        results = pool.map(lambda s: _search_one(queries, embeddings, s[0], s[1]), scopes)
+        results = pool.map(lambda s: _search_one(question, queries, embeddings, s[0], s[1]), scopes)
     return {j: r for (j, _), r in zip(scopes, results)}
 
 
-def search_pooled(queries: list[str]) -> list[Passage]:
+def search_pooled(question: str, queries: list[str]) -> list[Passage]:
     """Naive baseline: a single search over every jurisdiction at once."""
-    return _search_one(queries, bedrock.embed_many(queries), None, config.TOP_K_NAIVE)
+    return _search_one(question, queries, bedrock.embed_many(queries), None, config.TOP_K_NAIVE)

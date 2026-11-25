@@ -1,6 +1,7 @@
 """The project profile: which site falls under which jurisdiction."""
 from __future__ import annotations
 
+import re
 from functools import lru_cache
 
 import yaml
@@ -13,9 +14,18 @@ def manifest() -> dict:
     return yaml.safe_load((config.CORPUS_ROOT / "corpus" / "sources.yaml").read_text())
 
 
+_PROJECT_ID = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
+
+
 @lru_cache
 def load(project_id: str = "wasatch-front-portfolio") -> dict:
-    path = config.CORPUS_ROOT / "corpus" / "projects" / f"{project_id}.yaml"
+    """Load a project profile. The id is restricted so it can never name a path."""
+    if not _PROJECT_ID.match(project_id):
+        raise KeyError(project_id)
+    root = (config.CORPUS_ROOT / "corpus" / "projects").resolve()
+    path = (root / f"{project_id}.yaml").resolve()
+    if path.parent != root or not path.is_file():
+        raise KeyError(project_id)
     return yaml.safe_load(path.read_text())
 
 

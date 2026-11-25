@@ -12,10 +12,16 @@ from . import config
 
 SCHEMA = f"""
 CREATE EXTENSION IF NOT EXISTS vector;
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'chunks')
+     AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'chunks' AND column_name = 'seq')
+  THEN DROP TABLE chunks; END IF;   -- corpus table is rebuilt by `ingest load`
+END $$;
 
 CREATE TABLE IF NOT EXISTS chunks (
     id                text PRIMARY KEY,
     doc_id            text NOT NULL,
+    seq               int  NOT NULL,          -- reading order within the document
     jurisdiction      text NOT NULL,
     jurisdiction_name text NOT NULL,
     layer             text NOT NULL,          -- 'local' or 'state'
@@ -99,6 +105,32 @@ def record_usage(input_tokens: int, output_tokens: int) -> None:
             "input_tokens = daily_usage.input_tokens + EXCLUDED.input_tokens, "
             "output_tokens = daily_usage.output_tokens + EXCLUDED.output_tokens",
             (input_tokens, output_tokens))
+
+
+def reserve_tokens(estimate: int, limit: int) -> bool:
+    """Atomically set aside `estimate` tokens for a request; False if it would pass the limit.
+
+    The reservation is counted as input tokens until `settle_usage` replaces it with the
+    real numbers, so concurrent requests cannot all slip under the limit together.
+    """
+    with conn() as c:
+        row = c.execute(
+            "INSERT INTO daily_usage (day, requests, input_tokens, output_tokens) "
+            "VALUES ((now() AT TIME ZONE 'utc')::date, 0, %(e)s, 0) "
+            "ON CONFLICT (day) DO UPDATE SET input_tokens = daily_usage.input_tokens + %(e)s "
+            "WHERE daily_usage.input_tokens + daily_usage.output_tokens + %(e)s <= %(l)s "
+            "RETURNING day", {"e": estimate, "l": limit}).fetchone()
+    return row is not None and estimate <= limit
+
+
+def settle_usage(estimate: int, input_tokens: int, output_tokens: int) -> None:
+    """Swap a reservation for what the request really used."""
+    with conn() as c:
+        c.execute(
+            "UPDATE daily_usage SET requests = requests + 1, "
+            "input_tokens = GREATEST(input_tokens - %s + %s, 0), "
+            "output_tokens = output_tokens + %s WHERE day = (now() AT TIME ZONE 'utc')::date",
+            (estimate, input_tokens, output_tokens))
 
 
 def log_request(**row) -> None:

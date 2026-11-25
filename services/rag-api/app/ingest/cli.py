@@ -51,12 +51,12 @@ def load() -> None:
         c.execute("TRUNCATE chunks")
         with c.cursor() as cur:
             cur.executemany(
-                "INSERT INTO chunks (id, doc_id, jurisdiction, jurisdiction_name, layer, doc_title, "
+                "INSERT INTO chunks (id, doc_id, seq, jurisdiction, jurisdiction_name, layer, doc_title, "
                 "doc_date, url, section_path, page_start, page_end, text, embedding) "
-                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (id) DO NOTHING",
-                [(k.id, k.doc_id, k.jurisdiction, k.jurisdiction_name, k.layer, k.doc_title,
+                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (id) DO NOTHING",
+                [(k.id, k.doc_id, n, k.jurisdiction, k.jurisdiction_name, k.layer, k.doc_title,
                   k.doc_date, k.url, k.section_path, k.page_start, k.page_end, k.text, Vector(v))
-                 for k, v in zip(chunks, vectors)])
+                 for n, (k, v) in enumerate(zip(chunks, vectors))])
     print("loaded")
 
 
@@ -68,6 +68,8 @@ KNOWN_FACTS = [
     ("which fault setback calculation method was adopted", "draper", "Lund and others (2020)"),
     ("which fault setback calculation method was adopted", "fruit_heights", "Batatian and Nelson (1999)"),
     ("minimum building setback from an active fault trace", "ogden_valley", "50 feet"),
+    ("minimum fault setback for single-family dwellings by risk category", "draper", "U4: 1.5; Minimum Setback (feet)4: 15"),
+    ("minimum fault setback table by occupancy class", "fruit_heights", "U: 3.0; Minimum setback: 50 feet"),
 ]
 
 
@@ -78,7 +80,7 @@ def verify() -> bool:
             print(f"{row['jurisdiction']:>15}: {row['n']} chunks")
     ok = True
     for question, jurisdiction, needle in KNOWN_FACTS:
-        hits = search_scoped([question], [jurisdiction], [])[jurisdiction]
+        hits = search_scoped(question, [question], [jurisdiction], [])[jurisdiction]
         found = any(needle in p.text for p in hits)
         leaked = any(p.jurisdiction != jurisdiction for p in hits)
         ok &= found and not leaked

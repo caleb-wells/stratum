@@ -23,11 +23,19 @@ ANSWER_EFFORT = os.getenv("ANSWER_EFFORT", "medium")
 MAX_OUTPUT_TOKENS = int(os.getenv("MAX_OUTPUT_TOKENS", "6000"))
 
 # Retrieval knobs.
-CANDIDATES_PER_SEARCH = 20     # per jurisdiction, per search type
-TOP_K_LOCAL = 6                # passages kept per local jurisdiction
+CANDIDATES_PER_SEARCH = 20     # per jurisdiction, per search type, per query
+RERANK_POOL = 40               # merged candidates sent to the re-ranker
+TOP_K_LOCAL = 8                # passages kept per local jurisdiction
 TOP_K_STATE = 3                # passages kept from statewide guidance
 TOP_K_NAIVE = 10               # single pooled search, for the comparison mode
 RRF_K = 60
+SECTION_EXPANSION = 4          # extra sibling passages pulled in per jurisdiction
 
 # Spend guard: total tokens (input + output) allowed per UTC day across all users.
 DAILY_TOKEN_LIMIT = int(os.getenv("DAILY_TOKEN_LIMIT", "3000000"))
+
+# Request size caps, so one oversized conversation cannot run past the daily limit.
+MAX_HISTORY_MESSAGES = 20          # most recent turns sent to the model
+MAX_MESSAGE_CHARS = 12000          # per message (~3k tokens)
+MAX_REQUEST_MESSAGES = 200         # anything larger is rejected outright
+RETRIEVAL_TOKEN_ALLOWANCE = 20000  # rough upper bound for retrieved passages + prompts
