@@ -6,6 +6,8 @@ The sample project is fictional. The regulations are real public documents, down
 2026-11-24. This is decision support, not engineering advice: confirm requirements against
 the currently adopted code.
 
+![A Stratum answer comparing fault setbacks at three sites, with the search line and citations](docs/screenshots/c2-answer.png)
+
 ## The problem with ordinary RAG
 
 Ordinary retrieval embeds every document into one pool and fetches the passages closest to
@@ -72,6 +74,8 @@ from how the documents are found and handed to it.
 4. Compare the answers against the "correct answer" column. Under each Stratum and Naive
    answer, the "Used ..." line opens to show which sections were searched, and each citation
    chip opens the source PDF at the cited page.
+
+![A citation opened beside the answer, showing the source PDF at the cited page](docs/screenshots/c3-source.png)
 
 | Ask | Correct answer | Where the baselines went wrong in the evaluation |
 |---|---|---|
