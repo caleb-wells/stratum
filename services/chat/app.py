@@ -21,9 +21,9 @@ ENABLE_FABLE = os.getenv("ENABLE_FABLE", "false").lower() == "true"
 # name shown in the picker -> (retrieval mode, answer model, description)
 PROFILES: dict[str, tuple[str, str, str]] = {
     "Stratum · Opus 5.5": ("scoped", "opus",
-        "Searches each jurisdiction separately and cites every claim. Claude Opus 5.5."),
+        "Searches each site's local code separately and cites every claim. Claude Opus 5.5."),
     "Stratum · Fable 5.2": ("scoped", "fable",
-        "The same jurisdiction-aware retrieval, answered by Claude Fable 5.2."),
+        "The same site-by-site retrieval, answered by Claude Fable 5.2."),
     "Baseline · Naive RAG": ("naive", "opus",
         "For comparison: one pooled search across all documents, generic prompt."),
     "Baseline · No retrieval": ("none", "opus",
@@ -37,7 +37,7 @@ STARTERS = [
     ("Compare slope stability at all three sites",
      "What minimum factors of safety apply to slope stability at each site, static and seismic? Show the differences."),
     ("How is the fault setback set at each site?",
-     "For each site, how is the required fault setback determined? Name the method each jurisdiction adopted and any minimum distance."),
+     "For each site, how is the required fault setback determined? Name the adopted method and any minimum distance."),
     ("How long is our Site A report valid?",
      "For Site A, how long is a geotechnical report valid, and what do we have to submit after that?"),
     ("Draft the regulatory section for Site B",
@@ -171,7 +171,7 @@ async def answer(message: cl.Message):
                     kind = event["type"]
                     if kind == "status":
                         if step is None:          # the UI prefixes step names with "Using" / "Used"
-                            step = cl.Step(name="the project's site-to-jurisdiction map" if mode == "scoped"
+                            step = cl.Step(name="the project's site map" if mode == "scoped"
                                            else "document search", type="retrieval")
                             step.start = _now()          # without a start time the step sorts below the answer
                             await step.send()

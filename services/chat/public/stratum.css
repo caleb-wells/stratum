@@ -4,16 +4,16 @@
    this file adds the moving ground, the glass, and depth. */
 
 :root {
-  --st-night: #07080d;
-  --st-deep: #0b0e17;
+  --st-night: #08090b;
+  --st-deep: #0c0d10;
   --st-cyan: #4fd1e8;
   --st-azure: #5b8def;
   --st-violet: #9b7bff;
-  --st-edge: rgba(215, 222, 240, 0.14);
-  --st-edge-bright: rgba(215, 222, 240, 0.26);
-  --st-pane: linear-gradient(150deg, rgba(255, 255, 255, 0.1), rgba(190, 200, 225, 0.045) 45%, rgba(170, 160, 220, 0.04));
-  --st-pane-soft: linear-gradient(150deg, rgba(255, 255, 255, 0.06), rgba(190, 200, 225, 0.025));
-  --st-blur: blur(26px) saturate(120%);
+  --st-edge: rgba(228, 230, 236, 0.13);
+  --st-edge-bright: rgba(228, 230, 236, 0.24);
+  --st-pane: linear-gradient(150deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.04) 45%, rgba(255, 255, 255, 0.03));
+  --st-pane-soft: linear-gradient(150deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02));
+  --st-blur: blur(26px) saturate(100%);
 }
 
 @keyframes st-drift-left  { to { background-position-x: -1200px; } }
@@ -28,17 +28,17 @@
 }
 @keyframes st-sheen { to { background-position: 220% 0, 0 0; } }
 @keyframes st-breathe {
-  0%, 100% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 24px 60px -24px rgba(0, 0, 0, 0.8), 0 0 50px -30px var(--st-azure); }
-  50%      { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 24px 60px -24px rgba(0, 0, 0, 0.8), 0 0 70px -24px var(--st-violet); }
+  0%, 100% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18); }
+  50%      { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22); }
 }
 
 /* ============================== the ground ============================== */
 
 html.dark body {
   background:
-    radial-gradient(70vw 55vh at 12% -5%, rgba(91, 141, 239, 0.09), transparent 70%),
-    radial-gradient(55vw 50vh at 100% 8%, rgba(155, 123, 255, 0.07), transparent 70%),
-    linear-gradient(180deg, var(--st-night), var(--st-deep) 65%, #0d111d) fixed;
+    radial-gradient(70vw 55vh at 12% -5%, rgba(255, 255, 255, 0.035), transparent 70%),
+    radial-gradient(55vw 50vh at 100% 8%, rgba(255, 255, 255, 0.025), transparent 70%),
+    linear-gradient(180deg, var(--st-night), var(--st-deep) 65%, #101114) fixed;
 }
 /* a slow light and three strata at different depths, behind everything */
 html.dark body::before {
@@ -47,7 +47,7 @@ html.dark body::before {
   width: 46vmax; height: 46vmax;
   left: 48%; top: -16%;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, rgba(79, 209, 232, 0.13), rgba(91, 141, 239, 0.05) 45%, transparent 70%);
+  background: radial-gradient(circle at 35% 35%, rgba(79, 209, 232, 0.05), rgba(255, 255, 255, 0.02) 45%, transparent 70%);
   filter: blur(34px);
   animation: st-float 24s ease-in-out infinite;
   pointer-events: none;
@@ -64,9 +64,10 @@ html.dark #root::after {
   pointer-events: none;
   z-index: 0;
 }
-html.dark body::after  { height: 46vh; background-image: url("/public/strata-3.svg"); opacity: 0.2;  animation: st-drift-right 150s linear infinite; }
-html.dark #root::before { height: 32vh; background-image: url("/public/strata-1.svg"); opacity: 0.24; animation: st-drift-left 100s linear infinite; }
-html.dark #root::after  { height: 19vh; background-image: url("/public/strata-2.svg"); opacity: 0.26; animation: st-drift-right 64s linear infinite; }
+/* two strata only: the tallest third layer was removed to keep the ground simple */
+html.dark body::after  { content: none; }
+html.dark #root::before { height: 32vh; background-image: url("/public/strata-1.svg"); opacity: 0.18; animation: st-drift-left 100s linear infinite; }
+html.dark #root::after  { height: 19vh; background-image: url("/public/strata-2.svg"); opacity: 0.2;  animation: st-drift-right 64s linear infinite; }
 
 html.dark #root > * { position: relative; z-index: 1; }
 
@@ -96,7 +97,7 @@ html.dark [data-sidebar="menu-button"][data-active="true"],
 html.dark [id^="thread-"] a.bg-accent,
 html.dark [id^="thread-"]:hover > a {
   background: var(--st-pane) !important;
-  box-shadow: inset 0 0 0 1px var(--st-edge), 0 10px 26px -18px var(--st-azure);
+  box-shadow: inset 0 0 0 1px var(--st-edge);
 }
 /* chat rows: Chainlit fades long titles with an opaque sidebar-coloured block and gives the
    "…" button a solid fill; both show as dark patches on glass. Titles end in an ellipsis
@@ -112,7 +113,7 @@ html.dark #root [id="thread-options"] {
 }
 html.dark #root [id="thread-options"]:hover,
 html.dark #root [id="thread-options"][data-state="open"] {
-  background: rgba(200, 210, 235, 0.2) !important;
+  background: rgba(222, 225, 232, 0.2) !important;
 }
 html.dark #root [id="thread-options"][data-state="open"] { opacity: 1; }
 
@@ -122,22 +123,22 @@ html.dark #message-composer {
   border: 1px solid var(--st-edge);
   -webkit-backdrop-filter: var(--st-blur);
   backdrop-filter: var(--st-blur);
-  animation: st-breathe 9s ease-in-out infinite;
+  animation: none;
   transition: border-color 200ms ease;
 }
 html.dark #message-composer:focus-within {
   border-color: rgba(79, 209, 232, 0.6);
   animation: none;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 24px 60px -24px rgba(0, 0, 0, 0.8), 0 0 0 4px rgba(79, 209, 232, 0.13), 0 0 70px -20px var(--st-cyan);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 0 0 4px rgba(79, 209, 232, 0.13);
 }
 html.dark #chat-input { background: transparent !important; border: 0 !important; box-shadow: none !important; }
 html.dark #chat-submit {
-  background: linear-gradient(120deg, var(--st-cyan), var(--st-azure) 60%, var(--st-violet)) !important;
+  background: var(--st-cyan) !important;
   color: #061022 !important;
-  box-shadow: 0 8px 24px -8px rgba(91, 141, 239, 0.9);
+  box-shadow: none;
   transition: transform 160ms ease, box-shadow 160ms ease;
 }
-html.dark #chat-submit:hover:not(:disabled) { transform: translateY(-2px) scale(1.04); box-shadow: 0 14px 30px -8px rgba(79, 209, 232, 0.9); }
+html.dark #chat-submit:hover:not(:disabled) { transform: translateY(-2px) scale(1.04); box-shadow: none; }
 
 /* messages: the user's bubble, answer tables, code, the search step */
 html.dark [data-step-type="user_message"] .bg-accent,
@@ -146,16 +147,16 @@ html.dark #root .message-content pre,
 html.dark #root [id^="step-"] > [role="region"],
 html.dark #root [id^="step-"] .border {
   background: var(--st-pane-soft) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
-  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(100%);
+  backdrop-filter: blur(16px) saturate(100%);
   box-shadow: inset 0 0 0 1px var(--st-edge), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 html.dark #root .rounded-3xl.bg-accent,
 html.dark #root .bg-accent.rounded-3xl {
-  background: linear-gradient(145deg, rgba(91, 141, 239, 0.26), rgba(155, 123, 255, 0.16)) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
-  backdrop-filter: blur(16px) saturate(120%);
-  box-shadow: inset 0 0 0 1px var(--st-edge-bright), 0 16px 40px -24px rgba(91, 141, 239, 0.8);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.055)) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(100%);
+  backdrop-filter: blur(16px) saturate(100%);
+  box-shadow: inset 0 0 0 1px var(--st-edge-bright);
 }
 html.dark #root table {
   background: var(--st-pane-soft);
@@ -163,9 +164,9 @@ html.dark #root table {
   backdrop-filter: blur(14px);
   border-radius: 0.9rem;
   overflow: hidden;
-  box-shadow: 0 0 0 1px var(--st-edge), 0 18px 40px -24px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 0 0 1px var(--st-edge);
 }
-html.dark #root thead, html.dark #root th { background: rgba(200, 210, 235, 0.1) !important; }
+html.dark #root thead, html.dark #root th { background: rgba(222, 225, 232, 0.1) !important; }
 html.dark #root [id^="step-"] { animation: st-rise 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 
 /* the search step's label reads as one line, left-aligned */
@@ -187,10 +188,10 @@ html.dark .element-link {
   transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
 }
 html.dark .element-link:hover {
-  background: linear-gradient(120deg, var(--st-cyan), var(--st-azure)) !important;
+  background: var(--st-cyan) !important;
   color: #061022 !important;
   transform: translateY(-1px);
-  box-shadow: 0 8px 20px -8px var(--st-cyan);
+  box-shadow: none;
 }
 
 /* starter cards and the profile picker */
@@ -198,14 +199,14 @@ html.dark #root button[id^="starter-"],
 html.dark #chat-profiles {
   background: var(--st-pane-soft) !important;
   border: 1px solid var(--st-edge) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(120%);
-  backdrop-filter: blur(18px) saturate(120%);
+  -webkit-backdrop-filter: blur(18px) saturate(100%);
+  backdrop-filter: blur(18px) saturate(100%);
   transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 html.dark #root button[id^="starter-"]:hover {
   transform: translateY(-3px);
   border-color: rgba(79, 209, 232, 0.5) !important;
-  box-shadow: 0 18px 40px -20px var(--st-cyan), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 /* floating layers: menus, pickers, tooltips, dialogs, the source viewer */
@@ -217,11 +218,11 @@ html.dark [data-radix-popper-content-wrapper] > *,
 html.dark #root .bg-card,
 html.dark .bg-popover {
   background: var(--st-pane) !important;
-  background-color: rgba(13, 15, 23, 0.6) !important;
-  -webkit-backdrop-filter: blur(30px) saturate(125%);
-  backdrop-filter: blur(30px) saturate(125%);
+  background-color: rgba(14, 15, 18, 0.62) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(100%);
+  backdrop-filter: blur(30px) saturate(100%);
   border-color: var(--st-edge) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 30px 70px -20px rgba(0, 0, 0, 0.75), 0 0 60px -30px var(--st-azure);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 14px 34px -18px rgba(0, 0, 0, 0.65);
 }
 /* Popovers carry their glass on a ::before layer instead of on themselves. An element with
    its own backdrop-filter stops anything nested inside it from blurring the page, and the
@@ -241,17 +242,17 @@ html.dark [data-radix-popper-content-wrapper] > *::before {
   border-radius: inherit;
   pointer-events: none;
   background: var(--st-pane);
-  background-color: rgba(13, 15, 23, 0.6);
-  -webkit-backdrop-filter: blur(30px) saturate(125%);
-  backdrop-filter: blur(30px) saturate(125%);
+  background-color: rgba(14, 15, 18, 0.62);
+  -webkit-backdrop-filter: blur(30px) saturate(100%);
+  backdrop-filter: blur(30px) saturate(100%);
 }
 html.dark [role="menuitem"]:hover,
 html.dark [role="option"]:hover,
 html.dark [role="option"][data-highlighted],
 html.dark [role="menuitem"][data-highlighted] {
-  background: rgba(200, 210, 235, 0.16) !important;
+  background: rgba(222, 225, 232, 0.16) !important;
 }
-html.dark * { scrollbar-color: rgba(200, 210, 235, 0.28) transparent; }
+html.dark * { scrollbar-color: rgba(222, 225, 232, 0.28) transparent; }
 
 /* ============================== sign-in page ============================== */
 
@@ -259,7 +260,7 @@ html.dark * { scrollbar-color: rgba(200, 210, 235, 0.28) transparent; }
 html.dark .grid.min-h-svh,
 html.dark .grid.lg\:grid-cols-2 {
   background:
-    linear-gradient(90deg, rgba(6, 9, 20, 0.86), rgba(6, 9, 20, 0.35) 55%, rgba(6, 9, 20, 0)),
+    linear-gradient(90deg, rgba(8, 9, 11, 0.86), rgba(8, 9, 11, 0.35) 55%, rgba(8, 9, 11, 0)),
     url("/public/login.svg") center / cover no-repeat fixed;
 }
 html.dark .grid.lg\:grid-cols-2 > div { background: transparent !important; }
@@ -270,13 +271,13 @@ html.dark .grid.lg\:grid-cols-2 form {
   background: var(--st-pane);
   -webkit-backdrop-filter: var(--st-blur);
   backdrop-filter: var(--st-blur);
-  box-shadow: inset 0 0 0 1px var(--st-edge), inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 40px 90px -30px rgba(0, 0, 0, 0.8), 0 0 80px -34px var(--st-azure);
+  box-shadow: inset 0 0 0 1px var(--st-edge), inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 14px 34px -18px rgba(0, 0, 0, 0.65);
   animation: st-rise 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 html.dark .grid.lg\:grid-cols-2 form h1 {
   font-size: 1.75rem;
   letter-spacing: -0.02em;
-  background: linear-gradient(100deg, #ffffff 25%, #bcd3ff 60%, var(--st-cyan));
+  background: linear-gradient(100deg, #ffffff 55%, var(--st-cyan));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -290,7 +291,7 @@ html.dark .grid.lg\:grid-cols-2 form input {
 }
 html.dark .grid.lg\:grid-cols-2 form input:focus {
   border-color: var(--st-cyan) !important;
-  box-shadow: 0 0 0 4px rgba(79, 209, 232, 0.16), 0 0 30px -8px var(--st-cyan) !important;
+  box-shadow: 0 0 0 4px rgba(79, 209, 232, 0.16) !important;
   outline: none;
 }
 html.dark .grid.lg\:grid-cols-2 form input:-webkit-autofill {
@@ -304,13 +305,13 @@ html.dark .grid.lg\:grid-cols-2 form button[type="submit"] {
   color: #061022 !important;
   background:
     linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.55) 48%, transparent 62%) -120% 0 / 220% 100% no-repeat,
-    linear-gradient(100deg, var(--st-cyan), var(--st-azure) 55%, var(--st-violet)) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 10px 30px -10px rgba(91, 141, 239, 0.8);
+    linear-gradient(100deg, var(--st-cyan), var(--st-cyan)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
   transition: transform 160ms ease, box-shadow 160ms ease;
 }
 html.dark .grid.lg\:grid-cols-2 form button[type="submit"]:hover {
   transform: translateY(-2px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 18px 40px -12px rgba(91, 141, 239, 0.95);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
   animation: st-sheen 900ms ease-out;
 }
 /* the logo on the sign-in page and in the app stays a modest mark */
@@ -353,8 +354,8 @@ html.dark #root [id^="step-"] button[id^="step-"] > svg { position: absolute; ri
 
 /* phone browsers colour their status bar and toolbar from the page's plain background colour
    (gradients do not count), so give the page one; otherwise those bars come out white */
-html.dark { background-color: #0b0e17; color-scheme: dark; }
-html.dark body { background-color: #0b0e17; }
+html.dark { background-color: #0c0d10; color-scheme: dark; }
+html.dark body { background-color: #0c0d10; }
 
 /* An avatar slot with no image (the search step's name is not a valid avatar id, so its
    image request fails) shows the Stratum mark instead of an empty pulsing circle. */

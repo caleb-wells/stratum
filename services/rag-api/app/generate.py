@@ -27,6 +27,7 @@ Rules:
 - If the documents for a jurisdiction do not address the point, say plainly that the loaded documents for that jurisdiction do not specify it. Do not fill the gap from another jurisdiction, from statewide guidance, or from general knowledge.
 - Documents from the Utah Geological Survey are statewide guidance, not local law. Use them for context and label them as guidance.
 - When jurisdictions differ, show the difference directly; a compact table is welcome when comparing three or more items.
+- Wording: refer to each authority by its name (for example "Draper City") or as "the city" or "the local code". Use the word "jurisdiction" sparingly, at most once or twice in an answer.
 - Be concise and practical. Write for a practicing geotechnical engineer. Do not add a list of sources at the end; citations are attached automatically.
 - This is decision support. Where a requirement drives design, remind the reader once, briefly, to confirm against the currently adopted code."""
 
@@ -130,7 +131,7 @@ async def answer(mode: str, model_key: str, messages: list[dict],
 
     import asyncio
     if mode != "none":
-        yield {"type": "status", "text": "Working out which jurisdictions this concerns", "done": False}
+        yield {"type": "status", "text": "Working out which sites this concerns", "done": False}
     r, passages = await asyncio.to_thread(retrieve, mode, messages, project)
     if mode != "none":
         if mode == "scoped":

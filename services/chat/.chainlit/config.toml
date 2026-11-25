@@ -27,14 +27,14 @@ favorites = false
 
 [UI]
 name = "Stratum"
-description = "Geotechnical requirements for multi-jurisdiction projects, kept separate by jurisdiction and tied to their sources."
+description = "Geotechnical requirements for projects whose sites fall under different local codes, kept separate by site and tied to their sources."
 default_theme = "dark"
 layout = "wide"
 default_sidebar_state = "open"
 confirm_new_chat = false
 cot = "full"
-custom_css = "/public/stratum.css?v=8"
-custom_js = "/public/stratum.js?v=3"
+custom_css = "/public/stratum.css?v=9"
+custom_js = "/public/stratum.js?v=4"
 alert_style = "modern"
 login_page_image = "/public/login.svg"
 login_page_image_filter = ""

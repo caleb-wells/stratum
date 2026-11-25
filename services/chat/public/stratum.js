@@ -84,7 +84,7 @@
       meta.name = "theme-color";
       document.head.appendChild(meta);
     }
-    var colour = dark ? "#0b0e17" : "#f3f6fd";
+    var colour = dark ? "#0c0d10" : "#f3f6fd";
     if (meta.content !== colour) meta.content = colour;
   }
   sync();
