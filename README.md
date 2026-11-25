@@ -7,9 +7,9 @@ requirement to another city's site.
 Stratum keeps each jurisdiction's regulations in its own layer, searches each layer
 separately, and ties every claim in the answer to the exact source text.
 
-The sample project is fictional. The
-regulations are real public documents, downloaded 2026-11-24. This is decision support, not
-engineering advice: confirm requirements against the currently adopted code.
+The sample project is fictional. The regulations are real public documents, downloaded
+2026-11-24. This is decision support, not engineering advice: confirm requirements against
+the currently adopted code.
 
 ## The problem with ordinary RAG
 
@@ -153,7 +153,6 @@ services/chat/     Chainlit frontend: sign-in, saved chats, source viewer, theme
 deploy/            Docker Compose stack, HTTPS proxy, server script
 infra/             AWS CDK (TypeScript)
 eval/              questions, runner, results
-PLAN.md            the build plan this was built from
 ```
 
 The chat interface is built on [Chainlit](https://github.com/Chainlit/chainlit) (Apache 2.0).

@@ -11,3 +11,4 @@ corpus/raw/
 corpus/parsed/
 *.log
 .DS_Store
+PLAN.md
