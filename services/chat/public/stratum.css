@@ -346,9 +346,10 @@ body:has(form #password) [data-sonner-toaster] { display: none; }
 
 /* the "Used …" line under an answer: let the label and the search description flow as one
    line of text so a long description wraps under itself instead of beside the label */
-html.dark #root [id^="step-"] button[id^="step-"] { display: block; text-align: left; line-height: 1.45; }
-html.dark #root [id^="step-"] button[id^="step-"] > span { display: inline; margin-right: 0.35em; }
-html.dark #root [id^="step-"] button[id^="step-"] > svg { display: inline-block; vertical-align: middle; margin-left: 0.4rem; }
+html.dark #root [id^="step-"] button[id^="step-"] { display: block; position: relative; padding-right: 1.6rem; text-align: left; line-height: 1.45; }
+html.dark #root [id^="step-"] button[id^="step-"] > span { display: inline; margin: 0; }
+/* the chevron sits at the right edge so it never wraps onto a line of its own */
+html.dark #root [id^="step-"] button[id^="step-"] > svg { position: absolute; right: 0; top: 0.3em; }
 
 /* phone browsers colour their status bar and toolbar from the page's plain background colour
    (gradients do not count), so give the page one; otherwise those bars come out white */
