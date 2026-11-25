@@ -73,29 +73,40 @@ answer that says so is correct.
 
 The set is 19 questions written from the verified source text: single-regulation facts,
 cross-regulation comparisons, "trap" questions where the right answer is "not specified
-here", and one report-drafting task. Each answer is graded for correctness and for
-wrong-regulation errors, and retrieval is checked separately. All three setups use Claude
-Opus 5.5; run on 2026-11-25.
+here", and one report-drafting task. Each answer is graded by a second model call for
+correctness and for wrong-regulation errors, and search is checked separately. All three
+setups use Claude Opus 5.5; run on 2026-11-25.
 
-| Setup | Correct | Wrong-regulation errors | Retrieved the right section |
+| Setup | Correct | Flagged as wrong-regulation | Search found the right section |
 |---|---|---|---|
-| No retrieval | 21% (4/19) | 37% (7/19) | n/a |
-| Naive RAG (one pooled search) | 68% (13/19) | 26% (5/19) | 69% (11/16) |
-| Stratum (one search per regulation) | 95% (18/19) | 0% (0/19) | 94% (15/16) |
+| No retrieval | 16% (3/19) | 42% (8/19) | n/a |
+| Naive RAG (one pooled search) | 68% (13/19) | 11% (2/19) | 69% (11/16) |
+| Stratum | 100% (19/19) | 11% (2/19), both checked and unfounded | 94% (15/16) |
 
 Correct answers by question type:
 
 | Setup | Single | Compare | Silent | Draft |
 |---|---|---|---|---|
-| No retrieval | 2/10 | 0/4 | 2/4 | 0/1 |
+| No retrieval | 2/10 | 0/4 | 1/4 | 0/1 |
 | Naive RAG | 10/10 | 1/4 | 2/4 | 0/1 |
-| Stratum | 10/10 | 4/4 | 4/4 | 0/1 |
+| Stratum | 10/10 | 4/4 | 4/4 | 1/1 |
 
-Naive retrieval handles single facts and falls apart on comparisons and traps, which is where
-similar clauses from different codes get mixed. Stratum's one miss is the report-drafting
-task: the search did not return Draper's fault-setback section, so the draft said the
-documents were silent on it. It did not borrow another city's value. Stratum sends about 50%
-more input tokens per question than naive retrieval (14,200 against 9,200).
+How to read this:
+
+- Naive retrieval handles single facts and falls apart on comparisons and traps, which is
+  where similar clauses from different codes get mixed.
+- The grader flagged two Stratum answers about Fruit Heights for details it guessed belonged
+  to another city (Table A-1, the Batatian and Nelson method, the Salt Lake City fault
+  segment). All of them are in the Fruit Heights documents, so the flags are grader errors.
+  They are left in the table as graded. An automated grader is a noisy instrument.
+- Before the [requirements matrix](#requirements-matrix) was added, Stratum scored 18/19 with
+  no flags. The miss was the drafting task: search did not return Draper's fault-setback
+  section, so the draft said the documents were silent on it. Search still misses that
+  section (15/16 above); the matrix is what supplies the value now.
+- The matrix covers several of the facts these questions ask about, so the 19/19 partly
+  reflects that overlap. It shows the lookup works, not that every question is now safe.
+- Stratum sends about 70% more input tokens per question than naive retrieval (15,600
+  against 9,200).
 
 The full table is in [`eval/results/results.md`](eval/results/results.md) and every answer
 with its grade is in [`eval/results/results.json`](eval/results/results.json). Reproduce with
@@ -107,7 +118,7 @@ questions: treat the numbers as a direction, not a benchmark.
 | Layer | Document | Chunks |
 |---|---|---|
 | Local | Draper City Geotechnical Engineering Standards (2025-12-16), with Appendices A-E | 145 |
-| Local | Fruit Heights City Code Ch. 10.10A (SLEDS) and its appendices | 157 |
+| Local | Fruit Heights City Code Ch. 10.10A (SLEDS) and its appendices | 159 |
 | Local | Ogden Valley Code Ch. 108-22, Natural Hazard Areas | 24 |
 | State | Utah Geological Survey Circular 128 (2020) | 556 |
 
@@ -125,9 +136,6 @@ it came from, its section and page. A cell is kept only if its quote is found wo
 in the source; where a code says nothing, the cell records that. At answer time the relevant
 cells are looked up exactly and sent with the searched passages. The values have not been
 reviewed by a licensed engineer.
-
-The results above were measured before the matrix was added. With it, the drafting question
-that failed is answered correctly; the full set has not been re-run yet.
 
 ## Running it
 
