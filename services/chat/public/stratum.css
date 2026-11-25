@@ -4,16 +4,16 @@
    this file adds the moving ground, the glass, and depth. */
 
 :root {
-  --st-night: #060914;
-  --st-deep: #0b1226;
+  --st-night: #07080d;
+  --st-deep: #0b0e17;
   --st-cyan: #4fd1e8;
   --st-azure: #5b8def;
   --st-violet: #9b7bff;
-  --st-edge: rgba(190, 205, 255, 0.16);
-  --st-edge-bright: rgba(190, 205, 255, 0.3);
-  --st-pane: linear-gradient(150deg, rgba(255, 255, 255, 0.12), rgba(148, 170, 255, 0.06) 45%, rgba(155, 123, 255, 0.07));
-  --st-pane-soft: linear-gradient(150deg, rgba(255, 255, 255, 0.07), rgba(148, 170, 255, 0.035));
-  --st-blur: blur(26px) saturate(165%);
+  --st-edge: rgba(215, 222, 240, 0.14);
+  --st-edge-bright: rgba(215, 222, 240, 0.26);
+  --st-pane: linear-gradient(150deg, rgba(255, 255, 255, 0.1), rgba(190, 200, 225, 0.045) 45%, rgba(170, 160, 220, 0.04));
+  --st-pane-soft: linear-gradient(150deg, rgba(255, 255, 255, 0.06), rgba(190, 200, 225, 0.025));
+  --st-blur: blur(26px) saturate(120%);
 }
 
 @keyframes st-drift-left  { to { background-position-x: -1200px; } }
@@ -36,9 +36,9 @@
 
 html.dark body {
   background:
-    radial-gradient(70vw 55vh at 12% -5%, rgba(91, 141, 239, 0.24), transparent 70%),
-    radial-gradient(55vw 50vh at 100% 8%, rgba(155, 123, 255, 0.2), transparent 70%),
-    linear-gradient(180deg, var(--st-night), var(--st-deep) 65%, #0e1838) fixed;
+    radial-gradient(70vw 55vh at 12% -5%, rgba(91, 141, 239, 0.09), transparent 70%),
+    radial-gradient(55vw 50vh at 100% 8%, rgba(155, 123, 255, 0.07), transparent 70%),
+    linear-gradient(180deg, var(--st-night), var(--st-deep) 65%, #0d111d) fixed;
 }
 /* a slow light and three strata at different depths, behind everything */
 html.dark body::before {
@@ -47,7 +47,7 @@ html.dark body::before {
   width: 46vmax; height: 46vmax;
   left: 48%; top: -16%;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, rgba(79, 209, 232, 0.3), rgba(91, 141, 239, 0.1) 45%, transparent 70%);
+  background: radial-gradient(circle at 35% 35%, rgba(79, 209, 232, 0.13), rgba(91, 141, 239, 0.05) 45%, transparent 70%);
   filter: blur(34px);
   animation: st-float 24s ease-in-out infinite;
   pointer-events: none;
@@ -64,9 +64,9 @@ html.dark #root::after {
   pointer-events: none;
   z-index: 0;
 }
-html.dark body::after  { height: 46vh; background-image: url("/public/strata-3.svg"); opacity: 0.4;  animation: st-drift-right 150s linear infinite; }
-html.dark #root::before { height: 32vh; background-image: url("/public/strata-1.svg"); opacity: 0.5;  animation: st-drift-left 100s linear infinite; }
-html.dark #root::after  { height: 19vh; background-image: url("/public/strata-2.svg"); opacity: 0.55; animation: st-drift-right 64s linear infinite; }
+html.dark body::after  { height: 46vh; background-image: url("/public/strata-3.svg"); opacity: 0.2;  animation: st-drift-right 150s linear infinite; }
+html.dark #root::before { height: 32vh; background-image: url("/public/strata-1.svg"); opacity: 0.24; animation: st-drift-left 100s linear infinite; }
+html.dark #root::after  { height: 19vh; background-image: url("/public/strata-2.svg"); opacity: 0.26; animation: st-drift-right 64s linear infinite; }
 
 html.dark #root > * { position: relative; z-index: 1; }
 
@@ -82,7 +82,7 @@ html.dark #header {
 
 /* sidebar */
 html.dark [data-sidebar="sidebar"] {
-  background: linear-gradient(180deg, rgba(148, 170, 255, 0.1), rgba(148, 170, 255, 0.04)) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02)) !important;
   -webkit-backdrop-filter: var(--st-blur);
   backdrop-filter: var(--st-blur);
   box-shadow: inset -1px 0 0 var(--st-edge);
@@ -112,7 +112,7 @@ html.dark #root [id="thread-options"] {
 }
 html.dark #root [id="thread-options"]:hover,
 html.dark #root [id="thread-options"][data-state="open"] {
-  background: rgba(148, 170, 255, 0.2) !important;
+  background: rgba(200, 210, 235, 0.2) !important;
 }
 html.dark #root [id="thread-options"][data-state="open"] { opacity: 1; }
 
@@ -146,15 +146,15 @@ html.dark #root .message-content pre,
 html.dark #root [id^="step-"] > [role="region"],
 html.dark #root [id^="step-"] .border {
   background: var(--st-pane-soft) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
-  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  backdrop-filter: blur(16px) saturate(120%);
   box-shadow: inset 0 0 0 1px var(--st-edge), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 html.dark #root .rounded-3xl.bg-accent,
 html.dark #root .bg-accent.rounded-3xl {
   background: linear-gradient(145deg, rgba(91, 141, 239, 0.26), rgba(155, 123, 255, 0.16)) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
-  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  backdrop-filter: blur(16px) saturate(120%);
   box-shadow: inset 0 0 0 1px var(--st-edge-bright), 0 16px 40px -24px rgba(91, 141, 239, 0.8);
 }
 html.dark #root table {
@@ -165,7 +165,7 @@ html.dark #root table {
   overflow: hidden;
   box-shadow: 0 0 0 1px var(--st-edge), 0 18px 40px -24px rgba(0, 0, 0, 0.7);
 }
-html.dark #root thead, html.dark #root th { background: rgba(148, 170, 255, 0.1) !important; }
+html.dark #root thead, html.dark #root th { background: rgba(200, 210, 235, 0.1) !important; }
 html.dark #root [id^="step-"] { animation: st-rise 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 
 /* the search step's label reads as one line, left-aligned */
@@ -198,8 +198,8 @@ html.dark #root button[id^="starter-"],
 html.dark #chat-profiles {
   background: var(--st-pane-soft) !important;
   border: 1px solid var(--st-edge) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
-  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(120%);
+  backdrop-filter: blur(18px) saturate(120%);
   transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 html.dark #root button[id^="starter-"]:hover {
@@ -217,9 +217,9 @@ html.dark [data-radix-popper-content-wrapper] > *,
 html.dark #root .bg-card,
 html.dark .bg-popover {
   background: var(--st-pane) !important;
-  background-color: rgba(11, 18, 38, 0.55) !important;
-  -webkit-backdrop-filter: blur(30px) saturate(170%);
-  backdrop-filter: blur(30px) saturate(170%);
+  background-color: rgba(13, 15, 23, 0.6) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(125%);
+  backdrop-filter: blur(30px) saturate(125%);
   border-color: var(--st-edge) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 30px 70px -20px rgba(0, 0, 0, 0.75), 0 0 60px -30px var(--st-azure);
 }
@@ -241,17 +241,17 @@ html.dark [data-radix-popper-content-wrapper] > *::before {
   border-radius: inherit;
   pointer-events: none;
   background: var(--st-pane);
-  background-color: rgba(11, 18, 38, 0.55);
-  -webkit-backdrop-filter: blur(30px) saturate(170%);
-  backdrop-filter: blur(30px) saturate(170%);
+  background-color: rgba(13, 15, 23, 0.6);
+  -webkit-backdrop-filter: blur(30px) saturate(125%);
+  backdrop-filter: blur(30px) saturate(125%);
 }
 html.dark [role="menuitem"]:hover,
 html.dark [role="option"]:hover,
 html.dark [role="option"][data-highlighted],
 html.dark [role="menuitem"][data-highlighted] {
-  background: rgba(148, 170, 255, 0.16) !important;
+  background: rgba(200, 210, 235, 0.16) !important;
 }
-html.dark * { scrollbar-color: rgba(148, 170, 255, 0.28) transparent; }
+html.dark * { scrollbar-color: rgba(200, 210, 235, 0.28) transparent; }
 
 /* ============================== sign-in page ============================== */
 
