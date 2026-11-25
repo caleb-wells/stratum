@@ -59,15 +59,31 @@ Browser -> Caddy (HTTPS) -> Chainlit app (login, saved chats, mode picker)
 
 ## Try the comparison yourself
 
-The picker at the top left has three setups running the same Claude model:
+All three setups answer with the same Claude model, so any difference in the answers comes
+from how the documents are found and handed to it.
 
-- **Stratum** - the design above.
-- **Baseline · Naive RAG** - one pooled search on the raw question, generic prompt.
-- **Baseline · No retrieval** - the model's memory only.
+1. Sign in and open the picker at the top left of the chat. It lists:
+   - **Stratum** - the design above.
+   - **Baseline · Naive RAG** - one pooled search on the raw question, generic prompt.
+   - **Baseline · No retrieval** - the model's memory only.
+2. Pick a setup, start a new chat and ask one of the questions below. A setup applies to the
+   whole chat, so use a new chat for each setup.
+3. Ask the same question, word for word, in the other two setups.
+4. Compare the answers against the "correct answer" column. Under each Stratum and Naive
+   answer, the "Used ..." line opens to show which sections were searched, and each citation
+   chip opens the source PDF at the cited page.
 
-Ask all three: *"What minimum static factor of safety do the regulations for Site C
-require for slope stability?"* The loaded Ogden Valley code does not give one. Only an
-answer that says so is correct.
+| Ask | Correct answer | Where the baselines went wrong in the evaluation |
+|---|---|---|
+| What minimum static factor of safety do the regulations for Site C require for slope stability? | Ogden Valley's code gives no number. It only requires the analysis. | No retrieval offered 1.5 as the likely requirement. Naive RAG said Ogden Valley's code was not among the documents. |
+| Compare how the required fault setback is determined at each of the three sites. | Draper: Lund and others (2020) against a table minimum. Fruit Heights: Batatian and Nelson (1999) against Table A-1, never under 15 ft. Ogden Valley: flat 50 ft, no formula. | No retrieval gave all three the same statewide formula. Naive RAG got two sites and missed Ogden Valley's 50 ft rule. |
+| Does the age cut-off used to decide whether a fault is active differ between Site A and Site B? | Yes. Draper: 4,000 radiocarbon years for the Wasatch fault zone. Fruit Heights: Holocene, about 10,000 years. | No retrieval said they probably do not differ. Naive RAG found Draper's rule and said no Fruit Heights standard was provided. |
+| Which published fault setback formula do the regulations for Site C require us to use? | None. Ogden Valley sets a 50 ft minimum, reducible with justification. | Both baselines missed the 50 ft rule. |
+
+Answers are generated fresh each time, so a baseline will sometimes get one of these right.
+The pattern to look for across several questions is what matters: one city's rule applied to
+another, a general value offered where the code is silent, or a code reported as missing
+when it is loaded.
 
 ## Results
 
@@ -108,10 +124,25 @@ How to read this:
 - Stratum sends about 70% more input tokens per question than naive retrieval (15,600
   against 9,200).
 
+### Limits of this evaluation
+
+Read the numbers above as a direction, not a benchmark:
+
+- **Small.** 19 questions, and only one of them is a report-drafting task.
+- **One run.** Answers vary between runs. In an earlier run of the same baselines, no
+  retrieval scored 4/19 and naive RAG was flagged 5 times instead of 2.
+- **Graded by a model.** A second Claude call does the grading, and it makes mistakes: both
+  flags against Stratum above were wrong. No engineer has graded the answers.
+- **Written by the builder.** The questions and reference answers were written by the same
+  person who built the system, from the same documents, and they target the differences
+  this design is meant to handle.
+- **Overlaps the matrix.** Several questions ask for values the requirements matrix stores.
+- **Narrow corpus.** Three local codes and one statewide guideline, all from Utah, on
+  geologic hazards. Nothing here shows how it behaves on other codes or more of them.
+
 The full table is in [`eval/results/results.md`](eval/results/results.md) and every answer
 with its grade is in [`eval/results/results.json`](eval/results/results.json). Reproduce with
-`python /srv/eval/run.py` inside the `rag-api` container. One run, one grader model, 19
-questions: treat the numbers as a direction, not a benchmark.
+`python /srv/eval/run.py` inside the `rag-api` container.
 
 ## What is in the corpus
 
