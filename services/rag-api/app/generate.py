@@ -131,7 +131,7 @@ async def answer(mode: str, model_key: str, messages: list[dict],
 
     import asyncio
     if mode != "none":
-        yield {"type": "status", "text": "Working out which sites this concerns", "done": False}
+        yield {"type": "status", "text": "Finding the relevant codes", "done": False}
     r, passages = await asyncio.to_thread(retrieve, mode, messages, project)
     if mode != "none":
         if mode == "scoped":

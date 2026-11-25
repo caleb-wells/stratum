@@ -58,7 +58,7 @@
   },
   "chat": {
     "input": {
-      "placeholder": "Ask about a site, or compare requirements across the project",
+      "placeholder": "Ask about the project",
       "actions": {
         "send": "Send message",
         "stop": "Stop Task",

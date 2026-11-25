@@ -21,26 +21,26 @@ ENABLE_FABLE = os.getenv("ENABLE_FABLE", "false").lower() == "true"
 # name shown in the picker -> (retrieval mode, answer model, description)
 PROFILES: dict[str, tuple[str, str, str]] = {
     "Stratum · Opus 5.5": ("scoped", "opus",
-        "Searches each site's local code separately and cites every claim. Claude Opus 5.5."),
+        "Answers from each site's own local code, with sources. Claude Opus 5.5."),
     "Stratum · Fable 5.2": ("scoped", "fable",
-        "The same site-by-site retrieval, answered by Claude Fable 5.2."),
+        "The same approach, answered by Claude Fable 5.2."),
     "Baseline · Naive RAG": ("naive", "opus",
-        "For comparison: one pooled search across all documents, generic prompt."),
+        "For comparison: searches all the documents at once."),
     "Baseline · No retrieval": ("none", "opus",
-        "For comparison: the model's own memory, no documents."),
+        "For comparison: no documents, model knowledge only."),
 }
 if not ENABLE_FABLE:
     PROFILES.pop("Stratum · Fable 5.2")
 DEFAULT_PROFILE = next(iter(PROFILES))
 
 STARTERS = [
-    ("Compare slope stability at all three sites",
-     "What minimum factors of safety apply to slope stability at each site, static and seismic? Show the differences."),
-    ("How is the fault setback set at each site?",
-     "For each site, how is the required fault setback determined? Name the adopted method and any minimum distance."),
-    ("How long is our Site A report valid?",
-     "For Site A, how long is a geotechnical report valid, and what do we have to submit after that?"),
-    ("Draft the regulatory section for Site B",
+    ("Slope stability factors of safety",
+     "What factors of safety do we need for slope stability at each site, static and seismic?"),
+    ("Fault setbacks",
+     "How do we work out the fault setback at each site, and is there a minimum distance?"),
+    ("Report validity at Site A",
+     "How long is our geotechnical report good for at Site A, and what do we need to submit after that?"),
+    ("Draft the Site B regulatory section",
      "Draft the 'Regulatory Requirements' section of the geologic hazards report for Site B. Cover fault investigation, slope stability and liquefaction, with the governing criteria."),
 ]
 
@@ -135,12 +135,12 @@ def _searched_summary(sources: list[dict]) -> str:
 def _search_label(mode: str, sources: list[dict]) -> str:
     n = len(sources)
     if mode != "scoped":
-        return f"one pooled search across all documents ({n} passages)"
+        return f"all documents ({n} passages)"
     names = []
     for s in sources:
         if s["jurisdiction_name"] not in names:
             names.append(s["jurisdiction_name"])
-    return f"separate searches of {', '.join(names)} ({n} passages)" if names else "no document search"
+    return f"{', '.join(names)} ({n} passages)" if names else "no documents"
 
 
 @cl.on_message
@@ -171,8 +171,7 @@ async def answer(message: cl.Message):
                     kind = event["type"]
                     if kind == "status":
                         if step is None:          # the UI prefixes step names with "Using" / "Used"
-                            step = cl.Step(name="the project's site map" if mode == "scoped"
-                                           else "document search", type="retrieval")
+                            step = cl.Step(name="the project documents", type="retrieval")
                             step.start = _now()          # without a start time the step sorts below the answer
                             await step.send()
                     elif kind == "sources":

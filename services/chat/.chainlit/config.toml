@@ -27,7 +27,7 @@ favorites = false
 
 [UI]
 name = "Stratum"
-description = "Geotechnical requirements for projects whose sites fall under different local codes, kept separate by site and tied to their sources."
+description = "Geotechnical requirements, answered from the source documents."
 default_theme = "dark"
 layout = "wide"
 default_sidebar_state = "open"
